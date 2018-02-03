@@ -138,6 +138,7 @@ public class SwipeActivity extends AppCompatActivity {
         }
         if(inWebView){
             webView.setVisibility(View.GONE);
+            webView.loadUrl("about:blank");
             inWebView = false;
         }
     }
