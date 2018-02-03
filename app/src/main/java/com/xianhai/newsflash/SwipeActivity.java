@@ -64,6 +64,8 @@ public class SwipeActivity extends AppCompatActivity {
     private int lastColorSet;
 
     private boolean inWebView;
+    boolean pageLoaded = false;
+
     private boolean inSummaryMode;
     private boolean isLoading;
 
@@ -165,11 +167,11 @@ public class SwipeActivity extends AppCompatActivity {
         if (inSummaryMode) {
             displayNextNews();
             updateVisSwipeLoaded();
-        }
-        if(inWebView){
-            updateVisSummaryLoaded();
             webView.loadUrl("about:blank");
-            inWebView = false;
+            pageLoaded = false;
+        }
+        else if(inWebView){
+            updateVisSummaryLoaded();
         }
     }
 
@@ -178,8 +180,10 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.GONE);
         btnLinearLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.VISIBLE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = false;
+        inWebView = false;
     }
 
     private void updateVisSwipeUnloaded() {
@@ -187,8 +191,10 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.GONE);
         btnLinearLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = true;
+        inWebView = false;
     }
 
     private void updateVisSummaryLoaded() {
@@ -199,6 +205,7 @@ public class SwipeActivity extends AppCompatActivity {
         webView.setVisibility(View.GONE);
         inSummaryMode = true;
         isLoading = false;
+        inWebView = false;
     }
 
     private void updateVisSummaryUnloaded() {
@@ -206,8 +213,22 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.GONE);
         btnLinearLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = true;
+        inWebView = false;
+    }
+
+    private void updateVisWebViewLoaded(){
+        progressBar.setVisibility(View.GONE);
+        summaryScrollView.setVisibility(View.GONE);
+        btnLinearLayout.setVisibility(View.GONE);
+        headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
+        inSummaryMode = false;
+        isLoading = false;
+        inWebView = true;
+        pageLoaded = true;
     }
 
     private void displayNextNews() {
@@ -340,47 +361,6 @@ public class SwipeActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
-    /*
-    private void generateBackgroundImg() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenHeight = displayMetrics.heightPixels;
-        int screenWidth = displayMetrics.widthPixels;
-
-        Drawable img = LoadImageFromWebOperations(newsInfo.get(0).get(2));
-        Bitmap imgBitmap = ((BitmapDrawable) img).getBitmap();
-        int imgHeight = imgBitmap.getHeight();
-        int imgWidth = imgBitmap.getWidth();
-        double imgAS = (double) imgWidth / imgHeight;
-        Bitmap imgResized;
-        Bitmap imgCropped;
-        if (imgAS > 1.0) {
-            imgResized = Bitmap.createScaledBitmap(imgBitmap, (int) (screenHeight * imgAS), screenHeight, false);
-            imgCropped = Bitmap.createBitmap(imgResized,
-                    (int) (imgResized.getWidth() - screenWidth) / 2,
-                    0,
-                    screenWidth, screenHeight);
-        }
-        else {
-            imgResized = Bitmap.createScaledBitmap(imgBitmap, screenWidth, (int) (screenWidth / imgAS), false);
-            imgCropped = Bitmap.createBitmap(imgResized,
-                    0,
-                    (int) (imgResized.getHeight() - screenHeight) / 2,
-                    screenWidth, screenHeight);
-        }
-        backgroundView.setImageBitmap(imgCropped);
-    }
-
-    public static Drawable LoadImageFromWebOperations(String url) {
-        try {
-            InputStream is = (InputStream) new URL(url).getContent();
-            System.err.println(is);
-            Drawable d = Drawable.createFromStream(is, "src name");
-            return d;
-        } catch (Exception e) {
-            return null;
-        }
-    }*/
     private void openWebView(){
 
         //open browser inside your app
@@ -389,8 +369,8 @@ public class SwipeActivity extends AppCompatActivity {
         webView.getSettings().getLoadsImagesAutomatically();
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        webView.loadUrl(url);
-        webView.setVisibility(View.VISIBLE);
+        if(!pageLoaded) webView.loadUrl(url);
+        updateVisWebViewLoaded();
         inWebView = true;
     }
 
