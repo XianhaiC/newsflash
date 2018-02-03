@@ -28,15 +28,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class SwipeActivity extends AppCompatActivity {
-    private static final String SM_LENGTH = "4";
     private static final int SEED = 69;
     private static final int NEWS_BATCH = 30;
     private static int[] backgroundColors = new int[] {0xFFD70F43,0xFF891cd4, 0xFF3C689F, 0xFF08E742, 0xFFF6C72C,0xFFF63C2C};
