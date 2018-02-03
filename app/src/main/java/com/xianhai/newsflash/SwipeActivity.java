@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -53,6 +55,7 @@ public class SwipeActivity extends AppCompatActivity {
     private TextView headlineTextView;
     private Button likeBtn;
     private Button dislikeBtn;
+    private Button linkBtn;
     private ScrollView summaryScrollView;
     private TextView titleTextView;
     private TextView summaryTextView;
@@ -61,6 +64,9 @@ public class SwipeActivity extends AppCompatActivity {
 
     private Random random;
     private int lastColorSet;
+
+    private WebView webView;
+    private boolean inWebView;
 
     private boolean inSummaryMode;
     @Override
@@ -86,6 +92,16 @@ public class SwipeActivity extends AppCompatActivity {
         summaryTextView = (TextView) findViewById(R.id.summaryTextView);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnLinearLayout = (LinearLayout) findViewById(R.id.btnLinearLayout);
+        linkBtn = (Button) findViewById(R.id.linkBtn);
+        webView= (WebView)findViewById(R.id.WebView1);
+
+        webView.setVisibility(View.GONE);
+        linkBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                openWebView();
+            }
+        });
 
         summaryScrollView.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
@@ -121,6 +137,10 @@ public class SwipeActivity extends AppCompatActivity {
         if (inSummaryMode) {
             displayNextNews();
             updateVisSwipeLoaded();
+        }
+        if(inWebView){
+            webView.setVisibility(View.GONE);
+            inWebView = false;
         }
     }
 
@@ -160,7 +180,6 @@ public class SwipeActivity extends AppCompatActivity {
         if (newsInfo.size() != 0) {
             newsInfo.remove(0);
             headlineTextView.setText(newsInfo.get(0).get(0));
-            generateBackgroundImg();
         }
         else {
             updateVisSwipeUnloaded();
@@ -314,7 +333,26 @@ public class SwipeActivity extends AppCompatActivity {
             return null;
         }
     }*/
+    private void openWebView(){
 
+        //open browser inside your app
+        webView.setWebViewClient(new MyBrowser());
+        String url = newsInfo.get(0).get(1);
+        webView.getSettings().getLoadsImagesAutomatically();
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        webView.loadUrl(url);
+        webView.setVisibility(View.VISIBLE);
+        inWebView = true;
+    }
+
+    private class MyBrowser extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url){
+            view.loadUrl(url);
+            return true;
+        }
+    }
     private void generateBackgroundImg() {
         RequestQueue queue = Volley.newRequestQueue(this);
         ImageLoader imageLoader = new ImageLoader(queue, new ImageLoader.ImageCache() {
