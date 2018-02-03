@@ -7,5 +7,6 @@ package com.xianhai.newsflash;
 public class Config {
     public static final String NEWS_API_KEY = "90dda19c88a8416b860653fc782245f1";
     public static final String SMMRY_API_KEY = "2E906B3F01";
+    public static final List<String> SMMRY_API_KEY = new ArrayList<String>(Arrays.asList("2E906B3F01", "0F763BFFB1"));
     public static final String SM_LENGTH = "4";
 }
