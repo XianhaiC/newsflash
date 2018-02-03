@@ -137,7 +137,8 @@ public class SwipeActivity extends AppCompatActivity {
             updateVisSwipeLoaded();
         }
         if(inWebView){
-            webView.setVisibility(View.GONE);
+            updateVisSummaryLoaded();
+            webView.loadUrl("about:blank");
             inWebView = false;
         }
     }
@@ -165,6 +166,7 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.VISIBLE);
         btnLinearLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = true;
         isLoading = false;
     }
