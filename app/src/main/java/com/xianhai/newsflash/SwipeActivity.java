@@ -61,6 +61,7 @@ public class SwipeActivity extends AppCompatActivity {
 
     private WebView webView;
     private boolean inWebView;
+    boolean pageLoaded = false;
 
     private boolean inSummaryMode;
     private boolean isLoading;
@@ -135,11 +136,11 @@ public class SwipeActivity extends AppCompatActivity {
         if (inSummaryMode) {
             displayNextNews();
             updateVisSwipeLoaded();
-        }
-        if(inWebView){
-            updateVisSummaryLoaded();
             webView.loadUrl("about:blank");
-            inWebView = false;
+            pageLoaded = false;
+        }
+        else if(inWebView){
+            updateVisSummaryLoaded();
         }
     }
 
@@ -148,8 +149,10 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.GONE);
         btnLinearLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.VISIBLE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = false;
+        inWebView = false;
     }
 
     private void updateVisSwipeUnloaded() {
@@ -157,8 +160,10 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.GONE);
         btnLinearLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = true;
+        inWebView = false;
     }
 
     private void updateVisSummaryLoaded() {
@@ -169,6 +174,7 @@ public class SwipeActivity extends AppCompatActivity {
         webView.setVisibility(View.GONE);
         inSummaryMode = true;
         isLoading = false;
+        inWebView = false;
     }
 
     private void updateVisSummaryUnloaded() {
@@ -176,8 +182,22 @@ public class SwipeActivity extends AppCompatActivity {
         summaryScrollView.setVisibility(View.GONE);
         btnLinearLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = true;
+        inWebView = false;
+    }
+
+    private void updateVisWebViewLoaded(){
+        progressBar.setVisibility(View.GONE);
+        summaryScrollView.setVisibility(View.GONE);
+        btnLinearLayout.setVisibility(View.GONE);
+        headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
+        inSummaryMode = false;
+        isLoading = false;
+        inWebView = true;
+        pageLoaded = true;
     }
 
     private void displayNextNews() {
@@ -344,8 +364,8 @@ public class SwipeActivity extends AppCompatActivity {
         webView.getSettings().getLoadsImagesAutomatically();
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        webView.loadUrl(url);
-        webView.setVisibility(View.VISIBLE);
+        if(!pageLoaded) webView.loadUrl(url);
+        updateVisWebViewLoaded();
         inWebView = true;
     }
 
