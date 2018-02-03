@@ -269,7 +269,7 @@ public class SwipeActivity extends AppCompatActivity {
         params.put("SM_URL", newsInfo.get(0).get(1));
         params.put("SM_LENGTH", Config.SM_LENGTH);
         params.put("SM_API_KEY", Config.SMMRY_API_KEY.get(apiKeyIndex));
-	apiKeyIndex = (apiKeyIndex + 1) % Config.SMMRY_API_KEY.size();
+	    apiKeyIndex = (apiKeyIndex + 1) % Config.SMMRY_API_KEY.size();
         String url = constructURL("https://api.smmry.com", params);
         System.err.println(url);
 	// Request a string response from the provided URL.
@@ -282,6 +282,8 @@ public class SwipeActivity extends AppCompatActivity {
                         summaryTextView.setText(data.get("sm_api_content"));
                         titleTextView.setText(newsInfo.get(0).get(0));
                         updateVisSummaryLoaded();
+                        System.err.println("Success: summary");
+                        System.err.println(response);
                     }
                 }, new Response.ErrorListener() {
             @Override
