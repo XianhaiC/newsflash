@@ -27,6 +27,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,13 +38,15 @@ import java.util.Map;
 import java.util.Random;
 
 public class SwipeActivity extends AppCompatActivity {
-
-
+    private static final String NEWS_API_KEY = "90dda19c88a8416b860653fc782245f1";
+    private static final List<String> SMMRY_API_KEY = new ArrayList<String>(Arrays.asList("2E906B3F01", "0F763BFFB1"));
+    private static final String SM_LENGTH = "4";
     private static final int SEED = 69;
     private static int[] backgroundColors = new int[] {0xFFD70F43,0xFF891cd4, 0xFF3C689F, 0xFF08E742, 0xFFF6C72C,0xFFF63C2C};
     private static int[] textColors = new int[] {0xFFFFFFFF,0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF000000, 0xFF000000};
     private ArrayList<Bitmap> images;
     private ArrayList<ArrayList<String>> newsInfo;
+    private int apiKeyIndex = 0;
 
     private View decorView;
     private ImageView backgroundView;
@@ -241,10 +247,12 @@ public class SwipeActivity extends AppCompatActivity {
 
         params.put("SM_URL", newsInfo.get(0).get(1));
         params.put("SM_LENGTH", Config.SM_LENGTH);
-        params.put("SM_API_KEY", Config.SMMRY_API_KEY);
+        params.put("SM_LENGTH", SM_LENGTH);
+        params.put("SM_API_KEY", SMMRY_API_KEY.get(apiKeyIndex));
+	      apiKeyIndex = (apiKeyIndex + 1) % SMMRY_API_KEY.size();
         String url = constructURL("https://api.smmry.com", params);
         System.err.println(url);
-// Request a string response from the provided URL.
+	// Request a string response from the provided URL.
         StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
