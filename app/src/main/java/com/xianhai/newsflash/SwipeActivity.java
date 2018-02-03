@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class SwipeActivity extends AppCompatActivity {
+    private static final String EMPTY = "food";
     private static final int SEED = 69;
     private static final int NEWS_BATCH = 30;
     private static int[] backgroundColors = new int[] {0xFFD70F43,0xFF891cd4, 0xFF3C689F, 0xFF08E742, 0xFFF6C72C,0xFFF63C2C};
@@ -55,15 +57,19 @@ public class SwipeActivity extends AppCompatActivity {
     private TextView summaryTextView;
     private ProgressBar progressBar;
     private LinearLayout btnLinearLayout;
+    private SearchView searchView;
+    private WebView webView;
 
     private Random random;
     private int lastColorSet;
 
-    private WebView webView;
     private boolean inWebView;
-
     private boolean inSummaryMode;
     private boolean isLoading;
+
+    private String searchQuery;
+
+    private HashMap<String, Integer> pageHistory;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,9 +77,13 @@ public class SwipeActivity extends AppCompatActivity {
 
         random = new Random(SEED);
         lastColorSet = 0;
+        inWebView = false;
         inSummaryMode = false;
         isLoading = false;
 
+        searchQuery = EMPTY;
+
+        pageHistory = new HashMap<String, Integer>();
         images = new ArrayList<Bitmap>();
         newsInfo = new ArrayList<ArrayList<String>>();
 
@@ -89,9 +99,16 @@ public class SwipeActivity extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnLinearLayout = (LinearLayout) findViewById(R.id.btnLinearLayout);
         linkBtn = (Button) findViewById(R.id.linkBtn);
+        searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
 
+
+        // write helper method for vis initialization
+        summaryScrollView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
+
+
         linkBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
@@ -99,8 +116,22 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        summaryScrollView.setVisibility(View.GONE);
-        progressBar.setVisibility(View.GONE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                clearNewsInfo();
+                query = processQuery(query);
+                searchQuery = query;
+                updateVisSwipeUnloaded();
+                generateNews(NEWS_BATCH);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         backgroundView.setOnTouchListener(new OnSwipeTouchListener(SwipeActivity.this) {
             public void onSwipeRight() {
@@ -114,8 +145,7 @@ public class SwipeActivity extends AppCompatActivity {
 
             public void onSwipeLeft() {
                 displayNextNews();
-                if (newsInfo.size() < 10) generateNews(NEWS_BATCH, null);
-
+                if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
             }
 
             public void onSwipeTop() {
@@ -125,7 +155,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        generateNews(20, null);
+        generateNews(NEWS_BATCH);
         displayNextNews();
         //makeRequest();
     }
@@ -215,17 +245,30 @@ public class SwipeActivity extends AppCompatActivity {
         return url;
     }
 
-    private void generateNews(int toRetrieve, String query) {
+    private void generateNews(int toRetrieve) {
+
         RequestQueue queue = Volley.newRequestQueue(this);
         Map<String, String> params = new HashMap<String, String>();
         String API = "https://newsapi.org/v2";
+        int page = 1;
+        if (pageHistory.containsKey(searchQuery)) {
+            pageHistory.put(searchQuery, pageHistory.get(searchQuery).intValue() + 1);
+            page = pageHistory.get(searchQuery).intValue();
+        }
+        else {
+            pageHistory.put(searchQuery, page);
+        }
+
         params.put("apiKey", Config.NEWS_API_KEY);
-        if (query == null) {
+        params.put("page", Integer.toString(page));
+        if (searchQuery == null) {
             params.put("country", "us");
             API += "/top-headlines";
         }
         else {
-            params.put("q", query);
+            params.put("q", searchQuery);
+            params.put("language", "en");
+            params.put("sortBy", "popularity");
             API += "/everything";
         }
         String url = constructURL(API, params);
@@ -415,5 +458,14 @@ public class SwipeActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+
+    private void clearNewsInfo() {
+        newsInfo.clear();
+    }
+
+    private static String processQuery(String query) {
+        return query.replaceAll("[^a-zA-Z ]", "").toLowerCase();
     }
 }

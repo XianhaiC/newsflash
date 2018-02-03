@@ -23,17 +23,22 @@
         android:layout_marginBottom="40dp"
         android:layout_marginEnd="36dp"
         android:layout_marginStart="36dp"
+        android:layout_marginTop="8dp"
         android:text="headline"
         android:textAlignment="viewStart"
         android:textSize="36sp"
         app:layout_constraintBottom_toTopOf="@+id/btnLinearLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.666"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/WebView1"
+        app:layout_constraintVertical_bias="0.248" />
 
     <ScrollView
         android:id="@+id/summaryScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="invisible"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="96dp">
 
@@ -69,11 +74,12 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:layout_editor_absoluteY="16dp" />
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:layout_marginTop="24dp">
 
                 <Button
                     android:id="@+id/linkBtn"
@@ -123,7 +129,10 @@
     <WebView
         android:id="@+id/WebView1"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"></WebView>
+        android:layout_height="fill_parent"
+        android:visibility="invisible">
+
+    </WebView>
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -138,4 +147,16 @@
         app:layout_constraintEnd_toEndOf="@+id/summaryScrollView"
         app:layout_constraintStart_toStartOf="@+id/summaryScrollView"
         app:layout_constraintTop_toTopOf="@+id/summaryScrollView" />
+
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="219dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>
