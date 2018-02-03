@@ -27,13 +27,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -42,6 +40,7 @@ public class SwipeActivity extends AppCompatActivity {
     private static final List<String> SMMRY_API_KEY = new ArrayList<String>(Arrays.asList("2E906B3F01", "0F763BFFB1"));
     private static final String SM_LENGTH = "4";
     private static final int SEED = 69;
+    private static final int NEWS_BATCH = 30;
     private static int[] backgroundColors = new int[] {0xFFD70F43,0xFF891cd4, 0xFF3C689F, 0xFF08E742, 0xFFF6C72C,0xFFF63C2C};
     private static int[] textColors = new int[] {0xFFFFFFFF,0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF000000, 0xFF000000};
     private ArrayList<Bitmap> images;
@@ -63,6 +62,7 @@ public class SwipeActivity extends AppCompatActivity {
     private int lastColorSet;
 
     private boolean inSummaryMode;
+    private boolean isLoading;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +70,8 @@ public class SwipeActivity extends AppCompatActivity {
 
         random = new Random(SEED);
         lastColorSet = 0;
-        inSummaryMode = true;
+        inSummaryMode = false;
+        isLoading = false;
 
         images = new ArrayList<Bitmap>();
         newsInfo = new ArrayList<ArrayList<String>>();
@@ -102,6 +103,8 @@ public class SwipeActivity extends AppCompatActivity {
 
             public void onSwipeLeft() {
                 displayNextNews();
+                if (newsInfo.size() < 10) generateNews(NEWS_BATCH, null);
+
             }
 
             public void onSwipeTop() {
@@ -130,6 +133,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLinearLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.VISIBLE);
         inSummaryMode = false;
+        isLoading = false;
     }
 
     private void updateVisSwipeUnloaded() {
@@ -138,6 +142,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLinearLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.GONE);
         inSummaryMode = false;
+        isLoading = true;
     }
 
     private void updateVisSummaryLoaded() {
@@ -146,6 +151,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLinearLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         inSummaryMode = true;
+        isLoading = false;
     }
 
     private void updateVisSummaryUnloaded() {
@@ -154,13 +160,13 @@ public class SwipeActivity extends AppCompatActivity {
         btnLinearLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         inSummaryMode = false;
+        isLoading = true;
     }
 
     private void displayNextNews() {
         if (newsInfo.size() != 0) {
             newsInfo.remove(0);
             headlineTextView.setText(newsInfo.get(0).get(0));
-            generateBackgroundImg();
         }
         else {
             updateVisSwipeUnloaded();
@@ -223,8 +229,8 @@ public class SwipeActivity extends AppCompatActivity {
                                 info.add(article.getString("urlToImage"));
                                 newsInfo.add(info);
                             }
+                            if (isLoading) displayNextNews();
                             updateVisSwipeLoaded();
-                            displayNextNews();
 
                             System.err.println("Success");
                         } catch (JSONException e) {
