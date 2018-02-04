@@ -302,20 +302,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
 
             public void onSwipeTop() {
-
-
-
-                AlphaAnimation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);//fade from 1 to 0 alpha
-                fadeOutAnimation.setDuration(250);
-                fadeOutAnimation.setFillAfter(true);//to keep it at 0 when animation ends
-                searchView.startAnimation(fadeOutAnimation);
-                AlphaAnimation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);//fade from 1 to 0 alpha
-                fadeInAnimation.setDuration(250);
-                fadeInAnimation.setFillAfter(true);
-                returnButton.setAnimation(fadeInAnimation);
-
-                returnButton.setVisibility(View.VISIBLE);
-                System.err.println("anim started");
+                
             }
 
             public void onSwipeBottom() {
