@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Config {
     public static final String NEWS_API_KEY = "90dda19c88a8416b860653fc782245f1";
-    public static final List<String> SMMRY_API_KEY = new ArrayList<String>(Arrays.asList("2E906B3F01", "0F763BFFB1"));
+    public static final List<String> SMMRY_API_KEY = new ArrayList<String>(Arrays.asList("4BE3D7F649", "11108FD6CE"));
     public static final String SM_LENGTH = "4";
+    public static final String SM_KEYWORD_COUNT = "5";
 }

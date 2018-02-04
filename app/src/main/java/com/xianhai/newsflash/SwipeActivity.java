@@ -26,8 +26,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,7 +38,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class SwipeActivity extends AppCompatActivity {
-    private static final String EMPTY = "food";
+    private static final String EMPTY = "";
     private static final int SEED = 69;
     private static final int NEWS_BATCH = 30;
     private static int[] backgroundColors = new int[] {0xFFA37A9D,0xFF884E89, 0xFF4D3159, 0xFF2C1B30, 0xFF5151A3};
@@ -289,7 +287,7 @@ public class SwipeActivity extends AppCompatActivity {
 
         params.put("apiKey", Config.NEWS_API_KEY);
         params.put("page", Integer.toString(page));
-        if (searchQuery == null) {
+        if (searchQuery == null || searchQuery == "") {
             params.put("country", "us");
             API += "/top-headlines";
         }
@@ -340,21 +338,35 @@ public class SwipeActivity extends AppCompatActivity {
         Map<String, String> params = new HashMap<String, String>();
 
         params.put("SM_URL", newsInfo.get(0).get(1));
+        params.put("SM_KEYWORD_COUNT", Config.SM_KEYWORD_COUNT);
         params.put("SM_LENGTH", Config.SM_LENGTH);
         params.put("SM_API_KEY", Config.SMMRY_API_KEY.get(apiKeyIndex));
 	    apiKeyIndex = (apiKeyIndex + 1) % Config.SMMRY_API_KEY.size();
         String url = constructURL("https://api.smmry.com", params);
         System.err.println(url);
+
 	// Request a string response from the provided URL.
         StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
+                        try {
+                            JSONObject data = new JSONObject(response);
+                            summaryTextView.setText(data.getString("sm_api_content"));
+                            titleTextView.setText(newsInfo.get(0).get(0));
+                            updateVisSummaryLoaded();
+                            JSONArray keywords = data.getJSONArray("sm_api_keyword_array");
+                            generateKeywords(keywords);
+                        } catch (JSONException e) {
+                            System.err.println(e);
+                        }
+                        /*
                         HashMap<String,String> data = new Gson().fromJson(response, new TypeToken<HashMap<String, String>>(){}.getType());
                         summaryTextView.setText(data.get("sm_api_content"));
                         titleTextView.setText(newsInfo.get(0).get(0));
                         updateVisSummaryLoaded();
+                        JSONObject */
                         System.err.println("Success: summary");
                         System.err.println(response);
                     }
@@ -367,6 +379,48 @@ public class SwipeActivity extends AppCompatActivity {
         });
         queue.add(stringRequest);
     }
+
+    private void generateKeywords(JSONArray keywords) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        ArrayList<String> wikiURLs = new ArrayList<String>();
+        int requestsDone = 0;
+        try {
+            String url = "https://en.wikipedia.org/w/api.php?action=query&prop=info&inprop=url&format=json&titles=";
+            for (int i = 0; i < keywords.length(); i++) {
+                if (i != 0) url += "|";
+                url += keywords.getString(i);
+            }
+            StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    try {
+                        JSONObject wikiData = new JSONObject(response);
+                        System.err.println(wikiData);
+                        JSONObject data = new JSONObject(response);
+                        JSONObject pages = data.getJSONObject("query").getJSONObject("pages");
+                        Iterator<?> keys = pages.keys();
+                        while (keys.hasNext()) {
+                            String key = (String) keys.next();
+                            if (pages.get(key) instanceof JSONObject) {
+                                ((JSONObject) pages.get(key)).getString("fullurl");
+                            }
+                        }
+                    } catch (JSONException e) {
+                        System.err.println(e);
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+
+                }
+            });
+            queue.add(stringRequest);
+        } catch (JSONException e) {
+            System.err.println(e);
+        }
+    }
+
 
     private void openWebView(){
 
