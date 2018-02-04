@@ -1,5 +1,6 @@
 package com.xianhai.newsflash;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -61,6 +63,7 @@ public class SwipeActivity extends AppCompatActivity {
     private TextView headlineTextView;
     private ImageButton likeBtn;
     private ImageButton dislikeBtn;
+    private ImageButton randomBtn;
     private Button linkBtn;
     private Button saveArticleBtn;
     private ImageButton savedBtn;
@@ -126,6 +129,7 @@ public class SwipeActivity extends AppCompatActivity {
         linkBtn = (Button) findViewById(R.id.linkBtn);
         saveArticleBtn = (Button) findViewById(R.id.saveArticleBtn);
         savedBtn = (ImageButton) findViewById(R.id.savedBtn);
+        randomBtn = (ImageButton) findViewById(R.id.randomBtn);
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
         //keyWords = (Spinner)findViewById(R.id.spinner1);
@@ -159,6 +163,18 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
+        randomBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                clearNewsInfo();
+                searchView.setQuery("", false);
+                searchView.clearFocus();
+                searchQuery = EMPTY;
+                updateVisSwipeUnloaded();
+                generateNews(NEWS_BATCH);
+            }
+        });
+
         linkBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
@@ -177,7 +193,6 @@ public class SwipeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 if(!savePressed) {
-                    String url = newsInfo.get(0).get(1);
                     storedHeadlines.add(newsInfo.get(0).get(0));
                     articles.put(newsInfo.get(0).get(0), newsInfo.get(0).get(1));
                     savedAdapter.notifyDataSetChanged();
@@ -213,6 +228,10 @@ public class SwipeActivity extends AppCompatActivity {
                 searchQuery = query;
                 updateVisSwipeUnloaded();
                 generateNews(NEWS_BATCH);
+                if (searchView != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                }
                 return true;
             }
 
