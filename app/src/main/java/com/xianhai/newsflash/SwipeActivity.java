@@ -22,10 +22,12 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -33,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -433,15 +436,11 @@ public class SwipeActivity extends AppCompatActivity {
         lastColorSet = rand;
     }
 
-    private static String constructURL(String API, Map<String, String> params) {
+    private static String constructURL(String API, ArrayList<ArrayList<String>> params) {
         String url = API + "?";
-        Iterator<String> keyIterator = params.keySet().iterator();
-        int index = 0;
-        while (keyIterator.hasNext()) {
-            if (index != 0) url += "&";
-            String key = keyIterator.next();
-            url += key + "=" + params.get(key);
-            index++;
+        for (int i = 0; i < params.size(); i++) {
+            if (i != 0) url += "&";
+            url += params.get(i).get(0) + "=" + params.get(i).get(1);
         }
         return url;
     }
@@ -449,7 +448,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void generateNews(int toRetrieve) {
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        Map<String, String> params = new HashMap<String, String>();
+        ArrayList<ArrayList<String>> params = new ArrayList<ArrayList<String>>();
         String API = "https://newsapi.org/v2";
         int page = 1;
         if (pageHistory.containsKey(searchQuery)) {
@@ -460,20 +459,24 @@ public class SwipeActivity extends AppCompatActivity {
             pageHistory.put(searchQuery, page);
         }
 
-        params.put("apiKey", Config.NEWS_API_KEY);
-        params.put("page", Integer.toString(page));
+        params.add(new ArrayList<String>(Arrays.asList("page", Integer.toString(page))));
+        params.add(new ArrayList<String>(Arrays.asList("pageSize", Integer.toString(toRetrieve))));
+        params.add(new ArrayList<String>(Arrays.asList("apiKey", Config.NEWS_API_KEY)));
         if (searchQuery == null || searchQuery == "") {
-            params.put("country", "us");
+            //params.add(new ArrayList<String>(Arrays.asList("sources", "google-news")));
+            params.add(new ArrayList<String>(Arrays.asList("country", "us")));
             API += "/top-headlines";
         }
         else {
-            params.put("q", searchQuery);
-            params.put("language", "en");
-            params.put("sortBy", "popularity");
+            params.add(new ArrayList<String>(Arrays.asList("q", searchQuery)));
+            params.add(new ArrayList<String>(Arrays.asList("language", "en")));
+            params.add(new ArrayList<String>(Arrays.asList("sortBy", "popularity")));
+
             API += "/everything";
         }
-        String url = constructURL(API, params);
 
+        String url = constructURL(API, params);
+        System.err.println(url);
         StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
@@ -494,7 +497,8 @@ public class SwipeActivity extends AppCompatActivity {
                             if (isLoading) displayNextNews();
                             updateVisSwipeLoaded();
 
-                            System.err.println("Success");
+                            System.err.println("Success: news retrieval");
+                            System.err.println(response);
                         } catch (JSONException e) {
                             System.err.println(e);
                         }
@@ -511,14 +515,128 @@ public class SwipeActivity extends AppCompatActivity {
     private void generateSummary() {
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        Map<String, String> params = new HashMap<String, String>();
+        ArrayList<ArrayList<String>> params = new ArrayList<ArrayList<String>>();
+        String url = "https://api.aylien.com/api/v1/summarize";
 
-        params.put("SM_URL", newsInfo.get(0).get(1));
-        params.put("SM_KEYWORD_COUNT", Config.SM_KEYWORD_COUNT);
-        params.put("SM_LENGTH", Config.SM_LENGTH);
-        params.put("SM_API_KEY", Config.SMMRY_API_KEY.get(apiKeyIndex));
-	    apiKeyIndex = (apiKeyIndex + 1) % Config.SMMRY_API_KEY.size();
-        String url = constructURL("https://api.smmry.com", params);
+/*
+        params.add(new ArrayList<String>(Arrays.asList("SM_URL", newsInfo.get(0).get(1))));
+        params.add(new ArrayList<String>(Arrays.asList("SM_API_KEY", Config.SMMRY_API_KEY.get(apiKeyIndex))));
+
+        //params.add(new ArrayList<String>(Arrays.asList("SM_KEYWORD_COUNT", Config.SM_KEYWORD_COUNT)));
+        params.add(new ArrayList<String>(Arrays.asList("SM_LENGTH", Config.SM_LENGTH)));
+     */
+
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject data = new JSONObject(response);
+                            JSONArray sentences = data.getJSONArray("sentences");
+                            String content = "";
+                            for (int i = 0; i < sentences.length(); i++) {
+                                content += sentences.getString(i);
+                            }
+                            summaryTextView.setText(content);
+                            titleTextView.setText(newsInfo.get(0).get(0));
+                            updateVisSummaryLoaded();
+                        } catch (JSONException e) {
+                            System.err.println(e);
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        System.err.println(error);
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                HashMap<String, String> params = new HashMap<>();
+                params.put("url", newsInfo.get(0).get(1));
+                params.put("sentences_number", "2");
+
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4");
+                headers.put("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34");
+
+                return headers;
+            }
+        };
+        queue.add(postRequest);
+
+
+
+        /*
+
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground( final Void ... params ) {
+                // something you know that will take a few seconds
+                try {
+                    TextAPIClient client = new TextAPIClient("c5bf3e34", "bd22e5376ee81016f78c0768f4601dd4");
+                    SummarizeParams.Builder builder = SummarizeParams.newBuilder();
+                    java.net.URL url = new java.net.URL(newsInfo.get(0).get(1));
+                    builder.setUrl(url);
+                    builder.setNumberOfSentences(2);
+                    Summarize summary = client.summarize(builder.build());
+                    System.err.println("finished parsing words");
+                    String content = "";
+                    for (String sentence: summary.getSentences()) {
+                        content += sentence;
+                    }
+                    summaryTextView.setText(content);
+                    titleTextView.setText(newsInfo.get(0).get(0));
+                    updateVisSummaryLoaded();
+                } catch (MalformedURLException e) {
+                    System.err.println(e);
+                } catch (TextAPIException e) {
+                    System.err.println(e);
+                }
+                try {
+                    HttpResponse<JsonNode> response = Unirest.post("https://api.aylien.com/api/v1/summarize")
+                            .header("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4")
+                            .header("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34")
+                            .field("url", newsInfo.get(0).get(1))
+                            .field("sentences_number", "2")
+                            .asJson();
+                    summaryTextView.setText(response.getBody().toString());
+                    titleTextView.setText(newsInfo.get(0).get(0));
+                } catch (UnirestException e) {
+                    System.err.println(e);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute( final Void result ) {
+                // continue what you are doing...
+            }
+        }.execute();
+
+        */
+        /*
+        params.add(new ArrayList<String>(Arrays.asList("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4")));
+        params.add(new ArrayList<String>(Arrays.asList("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34")));
+        params.add(new ArrayList<String>(Arrays.asList("url", newsInfo.get(0).get(1))));
+        params.add(new ArrayList<String>(Arrays.asList("sentences_number", "2")));
+        apiKeyIndex = (apiKeyIndex + 1) % Config.SMMRY_API_KEY.size();
+        //String url = constructURL("https://api.smmry.com", params);
+
+        String url = constructURL("https://api.aylien.com/api/v1/summarize", params);
         System.err.println(url);
 
 	// Request a string response from the provided URL.
@@ -529,20 +647,31 @@ public class SwipeActivity extends AppCompatActivity {
                         // Display the first 500 characters of the response string.
                         try {
                             JSONObject data = new JSONObject(response);
+                            JSONArray sentences = data.getJSONArray("sentences");
+                            String content = "";
+                            for (int i = 0; i < sentences.length(); i++) {
+                                content += sentences.getString(i);
+                            }
+                            summaryTextView.setText(content);
+                            titleTextView.setText(newsInfo.get(0).get(0));
+
                             summaryTextView.setText(data.getString("sm_api_content"));
                             titleTextView.setText(newsInfo.get(0).get(0));
                             updateVisSummaryLoaded();
-                            JSONArray keywords = data.getJSONArray("sm_api_keyword_array");
-                            generateKeywords(keywords);
+                            //JSONArray keywords = data.getJSONArray("sm_api_keyword_array");
+                            //generateKeywords(keywords);
                         } catch (JSONException e) {
                             System.err.println(e);
+                            summaryTextView.setText(newsInfo.get(0).get(3));
+                            titleTextView.setText(newsInfo.get(0).get(0));
+                            updateVisSummaryLoaded();
                         }
-                        /*
+
                         HashMap<String,String> data = new Gson().fromJson(response, new TypeToken<HashMap<String, String>>(){}.getType());
                         summaryTextView.setText(data.get("sm_api_content"));
                         titleTextView.setText(newsInfo.get(0).get(0));
                         updateVisSummaryLoaded();
-                        JSONObject */
+                        JSONObject
                         System.err.println("Success: summary");
                         System.err.println(response);
                     }
@@ -553,7 +682,7 @@ public class SwipeActivity extends AppCompatActivity {
                 System.err.println(error);
             }
         });
-        queue.add(stringRequest);
+        queue.add(stringRequest);*/
     }
 
     private void generateKeywords(JSONArray keywords) {
