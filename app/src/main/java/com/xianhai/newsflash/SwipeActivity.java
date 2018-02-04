@@ -93,6 +93,7 @@ public class SwipeActivity extends AppCompatActivity {
 
     private boolean inSummaryMode;
     private boolean isLoading;
+    private boolean summaryLoading;
 
     private Spinner keytermsSpinner;
 
@@ -110,6 +111,7 @@ public class SwipeActivity extends AppCompatActivity {
         inSummaryMode = false;
         isLoading = false;
         savePressed = false;
+        summaryLoading = false;
 
         searchQuery = EMPTY;
 
@@ -188,10 +190,10 @@ public class SwipeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 clearNewsInfo();
-                searchView.setQuery("", false);
+                searchView.setQuery("", true);
                 searchView.clearFocus();
                 searchQuery = EMPTY;
-                updateVisSwipeUnloaded();
+                updateVisSwipeLoaded();
                 generateNews(NEWS_BATCH);
             }
         });
@@ -309,15 +311,16 @@ public class SwipeActivity extends AppCompatActivity {
 
         bodyLayout.setOnTouchListener(new OnSwipeTouchListener(SwipeActivity.this) {
             public void onSwipeRight() {
-                headlineTextView.setVisibility(View.GONE);
-                progressBar.setVisibility(View.VISIBLE);
+                updateVisSummaryUnloaded();
                 initializeBtnSummary();
                 generateSummary();
             }
 
             public void onSwipeLeft() {
-                displayNextNews();
-                if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
+                if(!isLoading) {
+                    displayNextNews();
+                    if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
+                }
             }
 
             public void onSwipeTop() {
@@ -440,11 +443,11 @@ public class SwipeActivity extends AppCompatActivity {
         if (newsInfo.size() != 0) {
             newsInfo.remove(0);
             headlineTextView.setText(newsInfo.get(0).get(0));
+            changeColorSet();
         }
         else {
             updateVisSwipeUnloaded();
         }
-        changeColorSet();
     }
 
     private void changeColorSet() {
@@ -537,7 +540,6 @@ public class SwipeActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
     private void generateSummary() {
-
         RequestQueue queue = Volley.newRequestQueue(this);
         ArrayList<ArrayList<String>> params = new ArrayList<ArrayList<String>>();
         String url = "https://api.aylien.com/api/v1/summarize";
@@ -600,6 +602,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
         };
         queue.add(postRequest);
+        summaryLoading = false;
 
 
 
