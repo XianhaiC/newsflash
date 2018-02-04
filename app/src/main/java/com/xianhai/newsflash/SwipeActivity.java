@@ -8,11 +8,6 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.util.DisplayMetrics;
-import android.util.LruCache;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -20,7 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -141,7 +135,7 @@ public class SwipeActivity extends AppCompatActivity {
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
         //keyWords = (Spinner)findViewById(R.id.spinner1);
-        savedList = (ListView)findViewById(R.id.list1);
+        savedList = (ListView)findViewById(R.id.savedList);
         returnButton = (ImageButton) findViewById(R.id.returnBtn);
         savedList = (ListView)findViewById(R.id.savedList);
         //keyTermsListView = (ListView)findViewById(R.id.keyermsListView);
@@ -302,7 +296,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
 
             public void onSwipeTop() {
-                
+
             }
 
             public void onSwipeBottom() {
