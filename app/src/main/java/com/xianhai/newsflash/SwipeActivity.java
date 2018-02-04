@@ -11,13 +11,17 @@ import android.util.LruCache;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -47,6 +51,8 @@ public class SwipeActivity extends AppCompatActivity {
     private static int[] textColors = new int[] {0xFFFFFFFF,0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
     private ArrayList<Bitmap> images;
     private ArrayList<ArrayList<String>> newsInfo;
+    private ArrayList<String> storedHeadlines;
+    private HashMap<String, String> articles;
     private View decorView;
     private ImageView backgroundView;
     private int apiKeyIndex = 0;
@@ -56,6 +62,8 @@ public class SwipeActivity extends AppCompatActivity {
     private ImageButton likeBtn;
     private ImageButton dislikeBtn;
     private Button linkBtn;
+    private Button saveArticleBtn;
+    private ImageButton savedBtn;
     private ScrollView summaryScrollView;
     private TextView titleTextView;
     private TextView summaryTextView;
@@ -64,12 +72,17 @@ public class SwipeActivity extends AppCompatActivity {
     private ConstraintLayout bodyLayout;
     private SearchView searchView;
     private WebView webView;
+    private Spinner keyWords;
+    private ListView savedList;
+    private ArrayAdapter<String> savedAdapter;
 
     private Random random;
     private int lastColorSet;
 
     private boolean inWebView;
     boolean pageLoaded = false;
+    private boolean inListView;
+    private boolean savePressed;
 
     private boolean inSummaryMode;
     private boolean isLoading;
@@ -87,12 +100,15 @@ public class SwipeActivity extends AppCompatActivity {
         inWebView = false;
         inSummaryMode = false;
         isLoading = false;
+        savePressed = false;
 
         searchQuery = EMPTY;
 
         pageHistory = new HashMap<String, Integer>();
         images = new ArrayList<Bitmap>();
         newsInfo = new ArrayList<ArrayList<String>>();
+        storedHeadlines = new ArrayList<String>();
+        articles = new HashMap<String, String>();
 
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
@@ -108,20 +124,65 @@ public class SwipeActivity extends AppCompatActivity {
         btnLayout = (LinearLayout) findViewById(R.id.btnLayout);
         bodyLayout = (ConstraintLayout) findViewById(R.id.bodyLayout);
         linkBtn = (Button) findViewById(R.id.linkBtn);
+        saveArticleBtn = (Button) findViewById(R.id.saveArticleBtn);
+        savedBtn = (ImageButton) findViewById(R.id.savedBtn);
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
+        //keyWords = (Spinner)findViewById(R.id.spinner1);
+        savedList = (ListView)findViewById(R.id.list1);
 
         //headlineTextView.setTypeface(customFont);
         // write helper method for vis initialization
         summaryScrollView.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
+        //keyWords.setVisibility(View.GONE);
+        savedList.setVisibility(View.GONE);
 
 
         linkBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 openWebView();
+            }
+        });
+
+        savedBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                updateLoadSavedArticles();
+            }
+        });
+
+        saveArticleBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                if(!savePressed) {
+                    String url = newsInfo.get(0).get(1);
+                    storedHeadlines.add(newsInfo.get(0).get(0));
+                    articles.put(newsInfo.get(0).get(0), newsInfo.get(0).get(1));
+                    savedAdapter.notifyDataSetChanged();
+                    savePressed = true;
+                }
+            }
+        });
+
+        savedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, storedHeadlines);
+        savedList.setAdapter(savedAdapter);
+
+        savedList.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View v, int position,
+                                    long arg3)
+            {
+                String value = (String)adapter.getItemAtPosition(position);
+                webView.loadUrl(articles.get(value));
+                updateVisWebViewLoaded();
+                inWebView = true;
+
+                // assuming string and if you want to get the value on click of list item
+
             }
         });
 
@@ -176,9 +237,20 @@ public class SwipeActivity extends AppCompatActivity {
             updateVisSwipeLoaded();
             webView.loadUrl("about:blank");
             pageLoaded = false;
+            savePressed = false;
         }
         else if(inWebView){
-            updateVisSummaryLoaded();
+            if(inListView){
+                updateLoadSavedArticles();
+                webView.loadUrl("about:blank");
+            }
+            else {
+                updateVisSummaryLoaded();
+            }
+        }
+        else if(inListView){
+            updateVisSwipeLoaded();
+            inListView = false;
         }
     }
 
@@ -188,6 +260,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.VISIBLE);
         webView.setVisibility(View.GONE);
+        savedList.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = false;
         inWebView = false;
@@ -199,6 +272,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
+        savedList.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = true;
         inWebView = false;
@@ -210,6 +284,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
+        savedList.setVisibility(View.GONE);
         inSummaryMode = true;
         isLoading = false;
         inWebView = false;
@@ -221,6 +296,7 @@ public class SwipeActivity extends AppCompatActivity {
         btnLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
+        savedList.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = true;
         inWebView = false;
@@ -232,10 +308,24 @@ public class SwipeActivity extends AppCompatActivity {
         btnLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
+        savedList.setVisibility(View.GONE);
         inSummaryMode = false;
         isLoading = false;
         inWebView = true;
         pageLoaded = true;
+    }
+    private void updateLoadSavedArticles(){
+        progressBar.setVisibility(View.GONE);
+        summaryScrollView.setVisibility(View.GONE);
+        btnLayout.setVisibility(View.GONE);
+        headlineTextView.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
+        savedList.setVisibility(View.VISIBLE);
+        inSummaryMode = false;
+        isLoading = false;
+        inWebView = false;
+        pageLoaded = false;
+        inListView = true;
     }
 
     private void displayNextNews() {
