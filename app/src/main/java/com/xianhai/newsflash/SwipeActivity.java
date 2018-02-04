@@ -530,7 +530,9 @@ public class SwipeActivity extends AppCompatActivity {
                         while (keys.hasNext()) {
                             String key = (String) keys.next();
                             if (pages.get(key) instanceof JSONObject) {
-                                ((JSONObject) pages.get(key)).getString("fullurl");
+                                JSONObject keytermObj = ((JSONObject) pages.get(key));
+                                String keytermURL = keytermObj.getString("fullurl");
+                                String keyterm = keytermObj.getString("title");
                             }
                         }
                     } catch (JSONException e) {
