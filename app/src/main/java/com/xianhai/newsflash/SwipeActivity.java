@@ -43,8 +43,8 @@ public class SwipeActivity extends AppCompatActivity {
     private static final String EMPTY = "food";
     private static final int SEED = 69;
     private static final int NEWS_BATCH = 30;
-    private static int[] backgroundColors = new int[] {0xFFD70F43,0xFF891cd4, 0xFF3C689F, 0xFF08E742, 0xFFF6C72C,0xFFF63C2C};
-    private static int[] textColors = new int[] {0xFFFFFFFF,0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF000000, 0xFF000000};
+    private static int[] backgroundColors = new int[] {0xFFA37A9D,0xFF884E89, 0xFF4D3159, 0xFF2C1B30, 0xFF5151A3};
+    private static int[] textColors = new int[] {0xFFFFFFFF,0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
     private ArrayList<Bitmap> images;
     private ArrayList<ArrayList<String>> newsInfo;
     private View decorView;
