@@ -139,6 +139,25 @@ public class SwipeActivity extends AppCompatActivity {
         //keyWords.setVisibility(View.GONE);
         savedList.setVisibility(View.GONE);
 
+        likeBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                decorView.setBackgroundColor(Color.WHITE);
+                headlineTextView.setTextColor(Color.BLACK);
+                headlineTextView.setVisibility(View.GONE);
+                btnLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+                generateSummary();
+            }
+        });
+
+        dislikeBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                displayNextNews();
+                if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
+            }
+        });
 
         linkBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -342,7 +361,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void changeColorSet() {
         int rand;
         do {
-            rand = random.nextInt(6);
+            rand = random.nextInt(5);
         } while (rand == lastColorSet);
         System.err.println(rand);
         decorView.setBackgroundColor(backgroundColors[rand]);

@@ -186,7 +186,7 @@
             android:src="@drawable/savedbtn"/>
 
         <ImageButton
-            android:id="@+id/likeBtn"
+            android:id="@+id/dislikeBtn"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_alignParentBottom="true"
@@ -196,7 +196,7 @@
             android:src="@drawable/dislikebtn"/>
 
         <ImageButton
-            android:id="@+id/dislikeBtn"
+            android:id="@+id/likeBtn"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_alignParentBottom="true"
