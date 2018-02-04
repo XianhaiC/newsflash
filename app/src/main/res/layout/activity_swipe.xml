@@ -9,12 +9,7 @@
     >
 
 
-    <ListView
-        android:id="@+id/savedList"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="#ffffff"
-        android:visibility="gone"></ListView>
+
 
 
     <WebView
@@ -71,6 +66,15 @@
         app:layout_constraintTop_toBottomOf="@+id/searchLayout"
         tools:layout_editor_absoluteX="0dp">
 
+        <ListView
+            android:id="@+id/savedList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="#ffffff"
+            android:visibility="gone">
+
+        </ListView>
+
         <ScrollView
             android:id="@+id/summaryScrollView"
             android:layout_width="match_parent"
@@ -124,10 +128,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@android:drawable/btn_dropdown"
-                    android:spinnerMode="dropdown"/>
+                    android:spinnerMode="dropdown" />
 
             </LinearLayout>
         </ScrollView>
+
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyle"
