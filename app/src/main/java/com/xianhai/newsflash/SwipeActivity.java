@@ -9,7 +9,9 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -19,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -53,6 +56,8 @@ public class SwipeActivity extends AppCompatActivity {
     private ArrayList<ArrayList<String>> newsInfo;
     private ArrayList<String> storedHeadlines;
     private HashMap<String, String> articles;
+    private HashMap<String, String> keytermsMap;
+    private ArrayList<String> keytermsList;
     private View decorView;
     private ImageView backgroundView;
     private int apiKeyIndex = 0;
@@ -75,7 +80,11 @@ public class SwipeActivity extends AppCompatActivity {
     private WebView webView;
     private Spinner keyWords;
     private ListView savedList;
+    private ListView keyTermsListView;
     private ArrayAdapter<String> savedAdapter;
+    private ArrayAdapter<String> keyTermsAdapter;
+
+    private LinearLayout summaryLinearLayout;
 
     private Random random;
     private int lastColorSet;
@@ -87,6 +96,8 @@ public class SwipeActivity extends AppCompatActivity {
 
     private boolean inSummaryMode;
     private boolean isLoading;
+
+    private Spinner keytermsSpinner;
 
     private String searchQuery;
 
@@ -110,6 +121,8 @@ public class SwipeActivity extends AppCompatActivity {
         newsInfo = new ArrayList<ArrayList<String>>();
         storedHeadlines = new ArrayList<String>();
         articles = new HashMap<String, String>();
+        keytermsList = new ArrayList<String>();
+        keytermsMap = new HashMap<String, String>();
 
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
@@ -131,7 +144,10 @@ public class SwipeActivity extends AppCompatActivity {
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
         //keyWords = (Spinner)findViewById(R.id.spinner1);
-        savedList = (ListView)findViewById(R.id.list1);
+        savedList = (ListView)findViewById(R.id.savedList);
+        //keyTermsListView = (ListView)findViewById(R.id.keyermsListView);
+        keytermsSpinner = (Spinner)findViewById(R.id.keytermsSpinner);
+        
 
         //headlineTextView.setTypeface(customFont);
         // write helper method for vis initialization
@@ -140,6 +156,13 @@ public class SwipeActivity extends AppCompatActivity {
         webView.setVisibility(View.GONE);
         //keyWords.setVisibility(View.GONE);
         savedList.setVisibility(View.GONE);
+        //keyTermsListView.setVisibility(View.GONE);
+        keytermsSpinner.setVisibility(View.GONE);
+
+        webView.setWebViewClient(new MyBrowser());
+        webView.getSettings().getLoadsImagesAutomatically();
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         likeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -199,7 +222,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        savedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, storedHeadlines);
+        savedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, keytermsList);
         savedList.setAdapter(savedAdapter);
 
         savedList.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -215,6 +238,32 @@ public class SwipeActivity extends AppCompatActivity {
 
                 // assuming string and if you want to get the value on click of list item
 
+            }
+        });
+
+        keyTermsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, keytermsList);
+        keytermsSpinner.setAdapter(keyTermsAdapter);
+
+
+        keytermsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id)
+            {
+                String value = (String)parentView.getItemAtPosition(position);
+                if(value!= "Choose term to view") {
+                    webView.loadUrl(keytermsMap.get(value));
+                    updateVisWebViewLoaded();
+                    inWebView = true;
+                }
+
+                // assuming string and if you want to get the value on click of list item
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
             }
         });
 
@@ -276,9 +325,9 @@ public class SwipeActivity extends AppCompatActivity {
             savePressed = false;
         }
         else if(inWebView){
+            webView.loadUrl("about:blank");
             if(inListView){
                 updateLoadSavedArticles();
-                webView.loadUrl("about:blank");
             }
             else {
                 updateVisSummaryLoaded();
@@ -321,6 +370,8 @@ public class SwipeActivity extends AppCompatActivity {
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         savedList.setVisibility(View.GONE);
+        //keyTermsListView.setVisibility(View.VISIBLE);
+        keytermsSpinner.setVisibility(View.VISIBLE);
         inSummaryMode = true;
         isLoading = false;
         inWebView = false;
@@ -509,6 +560,9 @@ public class SwipeActivity extends AppCompatActivity {
     }
 
     private void generateKeywords(JSONArray keywords) {
+        keytermsList.clear();
+        keytermsMap.clear();
+        keytermsList.add("Choose term to view");
         RequestQueue queue = Volley.newRequestQueue(this);
         ArrayList<String> wikiURLs = new ArrayList<String>();
         int requestsDone = 0;
@@ -533,6 +587,9 @@ public class SwipeActivity extends AppCompatActivity {
                                 JSONObject keytermObj = ((JSONObject) pages.get(key));
                                 String keytermURL = keytermObj.getString("fullurl");
                                 String keyterm = keytermObj.getString("title");
+                                keytermsList.add(keyterm);
+                                keyTermsAdapter.notifyDataSetChanged();
+                                keytermsMap.put(keyterm, keytermURL);
                             }
                         }
                     } catch (JSONException e) {
@@ -549,17 +606,15 @@ public class SwipeActivity extends AppCompatActivity {
         } catch (JSONException e) {
             System.err.println(e);
         }
+        keyTermsAdapter.notifyDataSetChanged();
     }
+
 
 
     private void openWebView(){
 
         //open browser inside your app
-        webView.setWebViewClient(new MyBrowser());
         String url = newsInfo.get(0).get(1);
-        webView.getSettings().getLoadsImagesAutomatically();
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         if(!pageLoaded) webView.loadUrl(url);
         updateVisWebViewLoaded();
         inWebView = true;

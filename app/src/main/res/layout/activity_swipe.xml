@@ -25,6 +25,7 @@
         tools:layout_editor_absoluteY="96dp">
 
         <LinearLayout
+            android:id="@+id/summaryLinearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -87,12 +88,14 @@
                 android:id="@+id/keytermsTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                android:text="Related Terms:" />
 
-            <ListView
-                android:id="@+id/keytermsListView"
+            <Spinner
+                android:id="@+id/keytermsSpinner"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:spinnerMode="dropdown"/>
 
         </LinearLayout>
 
@@ -100,10 +103,9 @@
     </ScrollView>
 
     <ListView
-        android:id="@+id/list1"
+        android:id="@+id/savedList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="#ffffff"></ListView>
+        android:layout_height="match_parent"></ListView>
 
 
     <WebView
