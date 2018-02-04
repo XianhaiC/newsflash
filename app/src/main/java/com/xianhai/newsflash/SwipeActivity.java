@@ -172,6 +172,7 @@ public class SwipeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 updateVisSummaryUnloaded();
                 initializeBtnSummary();
+                summaryScrollView.fullScroll(ScrollView.FOCUS_UP);
                 generateSummary();
             }
         });
@@ -313,6 +314,7 @@ public class SwipeActivity extends AppCompatActivity {
             public void onSwipeRight() {
                 updateVisSummaryUnloaded();
                 initializeBtnSummary();
+                summaryScrollView.fullScroll(ScrollView.FOCUS_UP);
                 generateSummary();
             }
 
@@ -493,7 +495,7 @@ public class SwipeActivity extends AppCompatActivity {
         params.add(new ArrayList<String>(Arrays.asList("apiKey", Config.NEWS_API_KEY)));
         if (searchQuery == null || searchQuery == "") {
             //params.add(new ArrayList<String>(Arrays.asList("sources", "google-news")));
-            params.add(new ArrayList<String>(Arrays.asList("sources", "cnn,cbc-news,abc-news,google-news")));
+            params.add(new ArrayList<String>(Arrays.asList("q", "trump")));
             //API += "/top-headlines";
         }
         else {
@@ -556,6 +558,7 @@ public class SwipeActivity extends AppCompatActivity {
                             for (int i = 0; i < sentences.length(); i++) {
                                 content += sentences.getString(i);
                             }
+                            System.err.println(response);
                             summaryTextView.setText(content);
                             titleTextView.setText(newsInfo.get(0).get(0));
                             updateVisSummaryLoaded();
@@ -578,20 +581,24 @@ public class SwipeActivity extends AppCompatActivity {
             {
                 HashMap<String, String> params = new HashMap<>();
                 params.put("url", newsInfo.get(0).get(1));
-                params.put("sentences_number", Config.SENT_LENGTH);
+                params.put("sentences_number", "2");
 
                 return params;
             }
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<>();
+                /*HashMap<String, String> headers = new HashMap<>();
                 String key = Config.AYLIEN_API_KEY.get(apiKeyIndex);
                 String id = Config.AYLIEN_ID.get(apiKeyIndex);
                 apiKeyIndex = ++apiKeyIndex % Config.AYLIEN_API_KEY.size();
                 headers.put("X-AYLIEN-TextAPI-Application-Key", key);
-                headers.put("X-AYLIEN-TextAPI-Application-ID", id);
-
+                headers.put("X-AYLIEN-TextAPI-Application-ID", id);*/
+                HashMap<String, String> headers = new HashMap<>();
+                /*headers.put("X-AYLIEN-TextAPI-Application-Key", "4212669a7baa9612836e487651f8c65e");
+                headers.put("X-AYLIEN-TextAPI-Application-ID", "6ff7caf3");*/
+                headers.put("X-AYLIEN-TextAPI-Application-Key", Config.AYLIEN_API_KEY.get(0));
+                headers.put("X-AYLIEN-TextAPI-Application-ID", Config.AYLIEN_ID.get(0));
                 return headers;
             }
         };
@@ -605,6 +612,7 @@ public class SwipeActivity extends AppCompatActivity {
         keytermsList.clear();
         keytermsMap.clear();
         keytermsList.add("Choose term to view");
+        keytermsSpinner.setSelection(0);
 
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "https://api.aylien.com/api/v1/concepts";
@@ -658,8 +666,8 @@ public class SwipeActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<>();
-                headers.put("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4");
-                headers.put("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34");
+                headers.put("X-AYLIEN-TextAPI-Application-Key", Config.AYLIEN_API_KEY.get(0));
+                headers.put("X-AYLIEN-TextAPI-Application-ID", Config.AYLIEN_ID.get(0));
 
                 return headers;
             }
