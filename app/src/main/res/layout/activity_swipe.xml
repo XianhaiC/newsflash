@@ -12,17 +12,7 @@
 
 
 
-    <WebView
-        android:id="@+id/WebView1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:visibility="gone">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"></LinearLayout>
-    </WebView>
 
     <RelativeLayout
         android:id="@+id/searchLayout"
@@ -58,13 +48,21 @@
         android:id="@+id/bodyLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginTop="0dp"
         android:layout_weight="21"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/btnLayout"
         app:layout_constraintTop_toBottomOf="@+id/searchLayout"
         tools:layout_editor_absoluteX="0dp">
+
+        <WebView
+            android:id="@+id/WebView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+        </WebView>
 
         <ListView
             android:id="@+id/savedList"
@@ -121,7 +119,7 @@
                     android:id="@+id/keytermsTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="TextView" />
+                    android:text="Related Terms:" />
 
                 <Spinner
                     android:id="@+id/keytermsSpinner"
