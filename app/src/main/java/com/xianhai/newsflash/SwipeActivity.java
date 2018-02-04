@@ -492,6 +492,7 @@ public class SwipeActivity extends AppCompatActivity {
                                 info.add(article.getString("title"));
                                 info.add(article.getString("url"));
                                 info.add(article.getString("urlToImage"));
+				info.add(article.getString("description"));
                                 newsInfo.add(info);
                             }
                             if (isLoading) displayNextNews();
