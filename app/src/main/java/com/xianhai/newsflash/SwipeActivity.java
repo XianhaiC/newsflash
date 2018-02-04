@@ -7,17 +7,14 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
-import android.util.LruCache;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -30,7 +27,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -48,23 +44,22 @@ public class SwipeActivity extends AppCompatActivity {
     private static final int SEED = 69;
     private static final int NEWS_BATCH = 30;
     private static int[] backgroundColors = new int[] {0xFFA37A9D,0xFF884E89, 0xFF4D3159, 0xFF2C1B30, 0xFF5151A3};
-    private static int[] textColors = new int[] {0xFFFFFFFF,0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
     private ArrayList<Bitmap> images;
     private ArrayList<ArrayList<String>> newsInfo;
     private ArrayList<String> storedHeadlines;
     private HashMap<String, String> articles;
     private View decorView;
-    private ImageView backgroundView;
     private int apiKeyIndex = 0;
 
     private Typeface customFont;
     private TextView headlineTextView;
+    private ImageButton savedBtn;
     private ImageButton likeBtn;
     private ImageButton dislikeBtn;
     private ImageButton randomBtn;
-    private Button linkBtn;
-    private Button saveArticleBtn;
-    private ImageButton savedBtn;
+    private ImageButton linkBtn;
+    private ImageButton saveBtn;
+    private ImageButton returnButton;
     private ScrollView summaryScrollView;
     private TextView titleTextView;
     private TextView summaryTextView;
@@ -76,6 +71,7 @@ public class SwipeActivity extends AppCompatActivity {
     private Spinner keyWords;
     private ListView savedList;
     private ArrayAdapter<String> savedAdapter;
+
 
     private Random random;
     private int lastColorSet;
@@ -117,21 +113,21 @@ public class SwipeActivity extends AppCompatActivity {
         customFont = Typeface.createFromAsset(getAssets(), "fonts/coolvetica_rg.ttf");
         headlineTextView = (TextView) findViewById(R.id.headlineTextView);
         dislikeBtn = (ImageButton) findViewById(R.id.dislikeBtn);
-        backgroundView = (ImageView) findViewById(R.id.backgroundView);
         summaryScrollView = (ScrollView) findViewById(R.id.summaryScrollView);
         titleTextView = (TextView) findViewById(R.id.titleTextView);
         summaryTextView = (TextView) findViewById(R.id.summaryTextView);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnLayout = (LinearLayout) findViewById(R.id.btnLayout);
         bodyLayout = (ConstraintLayout) findViewById(R.id.bodyLayout);
-        linkBtn = (Button) findViewById(R.id.linkBtn);
-        saveArticleBtn = (Button) findViewById(R.id.saveArticleBtn);
+        linkBtn = (ImageButton) findViewById(R.id.linkBtn);
+        saveBtn = (ImageButton) findViewById(R.id.saveBtn);
         savedBtn = (ImageButton) findViewById(R.id.savedBtn);
         randomBtn = (ImageButton) findViewById(R.id.randomBtn);
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
         //keyWords = (Spinner)findViewById(R.id.spinner1);
         savedList = (ListView)findViewById(R.id.list1);
+        returnButton = (ImageButton) findViewById(R.id.returnBtn);
 
         //headlineTextView.setTypeface(customFont);
         // write helper method for vis initialization
@@ -140,6 +136,7 @@ public class SwipeActivity extends AppCompatActivity {
         webView.setVisibility(View.GONE);
         //keyWords.setVisibility(View.GONE);
         savedList.setVisibility(View.GONE);
+        initializeBtnSwipe();
 
         likeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -187,7 +184,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        saveArticleBtn.setOnClickListener(new View.OnClickListener() {
+        saveBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 if(!savePressed) {
@@ -241,11 +238,9 @@ public class SwipeActivity extends AppCompatActivity {
 
         bodyLayout.setOnTouchListener(new OnSwipeTouchListener(SwipeActivity.this) {
             public void onSwipeRight() {
-                decorView.setBackgroundColor(Color.WHITE);
-                headlineTextView.setTextColor(Color.BLACK);
                 headlineTextView.setVisibility(View.GONE);
-                btnLayout.setVisibility(View.GONE);
                 progressBar.setVisibility(View.VISIBLE);
+                initializeBtnSummary();
                 generateSummary();
             }
 
@@ -255,6 +250,20 @@ public class SwipeActivity extends AppCompatActivity {
             }
 
             public void onSwipeTop() {
+
+
+
+                AlphaAnimation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);//fade from 1 to 0 alpha
+                fadeOutAnimation.setDuration(250);
+                fadeOutAnimation.setFillAfter(true);//to keep it at 0 when animation ends
+                searchView.startAnimation(fadeOutAnimation);
+                AlphaAnimation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);//fade from 1 to 0 alpha
+                fadeInAnimation.setDuration(250);
+                fadeInAnimation.setFillAfter(true);
+                returnButton.setAnimation(fadeInAnimation);
+
+                returnButton.setVisibility(View.VISIBLE);
+                System.err.println("anim started");
             }
 
             public void onSwipeBottom() {
@@ -271,6 +280,7 @@ public class SwipeActivity extends AppCompatActivity {
         if (inSummaryMode) {
             displayNextNews();
             updateVisSwipeLoaded();
+            initializeBtnSwipe();
             webView.loadUrl("about:blank");
             pageLoaded = false;
             savePressed = false;
@@ -382,7 +392,9 @@ public class SwipeActivity extends AppCompatActivity {
         } while (rand == lastColorSet);
         System.err.println(rand);
         decorView.setBackgroundColor(backgroundColors[rand]);
-        headlineTextView.setTextColor(textColors[rand]);
+        headlineTextView.setTextColor(0xFFFFFFFF);
+        summaryTextView.setTextColor(0xFFFFFFFF);
+        titleTextView.setTextColor(0xFFFFFFFF);
         lastColorSet = rand;
     }
 
@@ -572,65 +584,6 @@ public class SwipeActivity extends AppCompatActivity {
             return true;
         }
     }
-    private void generateBackgroundImg() {
-        RequestQueue queue = Volley.newRequestQueue(this);
-        ImageLoader imageLoader = new ImageLoader(queue, new ImageLoader.ImageCache() {
-            private final LruCache<String, Bitmap>
-                    cache = new LruCache<String, Bitmap>(20);
-
-            @Override
-            public Bitmap getBitmap(String url) {
-                return cache.get(url);
-            }
-
-            @Override
-            public void putBitmap(String url, Bitmap bitmap) {
-                cache.put(url, bitmap);
-            }
-        });
-
-        // If you are using normal ImageView
-        imageLoader.get(newsInfo.get(0).get(2), new ImageLoader.ImageListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //Log.e(TAG, "Image Load Error: " + error.getMessage());
-            }
-
-            @Override
-            public void onResponse(ImageLoader.ImageContainer response, boolean arg1) {
-                if (response.getBitmap() != null) {
-                    DisplayMetrics displayMetrics = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                    int screenHeight = displayMetrics.heightPixels;
-                    int screenWidth = displayMetrics.widthPixels;
-
-                    Bitmap imgBitmap = response.getBitmap();
-                    int imgHeight = imgBitmap.getHeight();
-                    int imgWidth = imgBitmap.getWidth();
-                    double imgAS = (double) imgWidth / imgHeight;
-                    Bitmap imgResized;
-                    Bitmap imgCropped;
-                    if (imgAS > 1.0) {
-                        imgResized = Bitmap.createScaledBitmap(imgBitmap, (int) (screenHeight * imgAS), screenHeight, false);
-                        imgCropped = Bitmap.createBitmap(imgResized,
-                                (int) (imgResized.getWidth() - screenWidth) / 2,
-                                0,
-                                screenWidth, screenHeight);
-                    }
-                    else {
-                        imgResized = Bitmap.createScaledBitmap(imgBitmap, screenWidth, (int) (screenWidth / imgAS), false);
-                        imgCropped = Bitmap.createBitmap(imgResized,
-                                0,
-                                (int) (imgResized.getHeight() - screenHeight) / 2,
-                                screenWidth, screenHeight);
-                    }
-                    backgroundView.setImageBitmap(imgCropped);
-                }
-            }
-        });
-    }
-
 
     private void clearNewsInfo() {
         newsInfo.clear();
@@ -638,5 +591,27 @@ public class SwipeActivity extends AppCompatActivity {
 
     private static String processQuery(String query) {
         return query.replaceAll("[^a-zA-Z ]", "").toLowerCase();
+    }
+
+
+    private void initializeBtnSwipe() {
+        likeBtn.setVisibility(View.VISIBLE);
+        dislikeBtn.setVisibility(View.VISIBLE);
+        randomBtn.setVisibility(View.VISIBLE);
+        savedBtn.setVisibility(View.VISIBLE);
+        searchView.setVisibility(View.VISIBLE);
+        linkBtn.setVisibility(View.GONE);
+        saveBtn.setVisibility(View.GONE);
+        returnButton.setVisibility(View.GONE);
+    }
+    private void initializeBtnSummary() {
+        likeBtn.setVisibility(View.GONE);
+        dislikeBtn.setVisibility(View.GONE);
+        randomBtn.setVisibility(View.GONE);
+        savedBtn.setVisibility(View.GONE);
+        searchView.setVisibility(View.GONE);
+        linkBtn.setVisibility(View.VISIBLE);
+        saveBtn.setVisibility(View.VISIBLE);
+        returnButton.setVisibility(View.VISIBLE);
     }
 }

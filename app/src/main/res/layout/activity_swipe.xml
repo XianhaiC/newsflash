@@ -5,105 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.xianhai.newsflash.SwipeActivity">
+    tools:context="com.xianhai.newsflash.SwipeActivity"
+    >
 
 
-    <ImageView
-        android:id="@+id/backgroundView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="65dp" />
-
-    <ScrollView
-        android:id="@+id/summaryScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="96dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/titleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="24dp"
-                android:text="title"
-                android:textAlignment="center"
-                android:textSize="28sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                tools:layout_editor_absoluteY="16dp" />
-
-            <TextView
-                android:id="@+id/summaryTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="24dp"
-                android:text="summary"
-                android:textAlignment="center"
-                android:textSize="20sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                tools:layout_editor_absoluteY="16dp" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:layout_marginTop="24dp">
-
-                <Button
-                    android:id="@+id/linkBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_weight="1"
-
-                    android:text="Full article" />
-                <Button
-                    android:id="@+id/saveArticleBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_weight="1"
-
-                    android:text="Save Article" />
-            </RelativeLayout>
-
-            <TextView
-                android:id="@+id/keytermsTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="TextView" />
-
-            <ListView
-                android:id="@+id/keytermsListView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </LinearLayout>
 
 
-    </ScrollView>
 
     <ListView
         android:id="@+id/list1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="#ffffff"></ListView>
+        android:textColor="#ffffff"
+        android:visibility="gone"></ListView>
 
 
     <WebView
@@ -112,24 +26,39 @@
         android:layout_height="fill_parent"
         android:visibility="gone">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"></LinearLayout>
     </WebView>
+
     <RelativeLayout
         android:id="@+id/searchLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/white"
         android:orientation="horizontal"
-        tools:layout_editor_absoluteX="0dp"
-        android:background="@color/white">
+        android:visibility="visible"
+        tools:layout_editor_absoluteX="0dp">
 
         <SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:layout_centerHorizontal="true"
             android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_centerHorizontal="true">
+            android:layout_marginRight="16dp">
 
         </SearchView>
+
+        <ImageButton
+            android:id="@+id/returnBtn"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/returnbtn"
+            android:visibility="gone" />
 
     </RelativeLayout>
 
@@ -145,6 +74,61 @@
         app:layout_constraintTop_toBottomOf="@+id/searchLayout"
         tools:layout_editor_absoluteX="0dp">
 
+        <ScrollView
+            android:id="@+id/summaryScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:visibility="gone"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="96dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/titleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="24dp"
+                    android:text="title"
+                    android:textAlignment="center"
+                    android:textSize="28sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:layout_editor_absoluteY="16dp" />
+
+                <TextView
+                    android:id="@+id/summaryTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="24dp"
+                    android:text="summary"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:layout_editor_absoluteY="16dp" />
+
+                <TextView
+                    android:id="@+id/keytermsTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="TextView" />
+
+                <ListView
+                    android:id="@+id/keytermsListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </LinearLayout>
+        </ScrollView>
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyle"
@@ -176,57 +160,98 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.175" />
+
     </android.support.constraint.ConstraintLayout>
 
-    <LinearLayout
-        android:id="@+id/btnLayout"
+
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        tools:layout_editor_absoluteX="0dp"
-        android:background="@color/white">
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="0dp">
 
-        <ImageButton
-            android:id="@+id/savedBtn"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
+
+        <LinearLayout
+            android:id="@+id/btnLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="0dp">
+
+            <ImageButton
+                android:id="@+id/savedBtn"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/savedbtn" />
+
+            <ImageButton
+                android:id="@+id/dislikeBtn"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/dislikebtn" />
+
+            <ImageButton
+                android:id="@+id/likeBtn"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/likebtn" />
+
+            <ImageButton
+                android:id="@+id/randomBtn"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/randombtn" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/summaryBtnLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_weight="1"
-            style="?android:attr/borderlessButtonStyle"
-            android:src="@drawable/savedbtn"/>
+            android:background="@color/white"
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="0dp">
 
-        <ImageButton
-            android:id="@+id/dislikeBtn"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_weight="1"
-            style="?android:attr/borderlessButtonStyle"
-            android:src="@drawable/dislikebtn"/>
+            <ImageButton
+                android:id="@+id/saveBtn"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/savebtn" />
 
-        <ImageButton
-            android:id="@+id/likeBtn"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_weight="1"
-            style="?android:attr/borderlessButtonStyle"
-            android:src="@drawable/likebtn"/>
+            <ImageButton
+                android:id="@+id/linkBtn"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/linkbtn" />
 
-        <ImageButton
-            android:id="@+id/randomBtn"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_weight="1"
-            style="?android:attr/borderlessButtonStyle"
-            android:src="@drawable/randombtn"/>
-
-    </LinearLayout>
+        </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
 
 </LinearLayout>
