@@ -488,16 +488,15 @@ public class SwipeActivity extends AppCompatActivity {
         params.add(new ArrayList<String>(Arrays.asList("apiKey", Config.NEWS_API_KEY)));
         if (searchQuery == null || searchQuery == "") {
             //params.add(new ArrayList<String>(Arrays.asList("sources", "google-news")));
-            params.add(new ArrayList<String>(Arrays.asList("country", "us")));
-            API += "/top-headlines";
+            params.add(new ArrayList<String>(Arrays.asList("sources", "cnn,cbc-news,abc-news,google-news")));
+            //API += "/top-headlines";
         }
         else {
             params.add(new ArrayList<String>(Arrays.asList("q", searchQuery)));
-            params.add(new ArrayList<String>(Arrays.asList("language", "en")));
-            params.add(new ArrayList<String>(Arrays.asList("sortBy", "popularity")));
-
-            API += "/everything";
         }
+        params.add(new ArrayList<String>(Arrays.asList("language", "en")));
+        params.add(new ArrayList<String>(Arrays.asList("sortBy", "popularity")));
+        API += "/everything";
 
         String url = constructURL(API, params);
         System.err.println(url);
