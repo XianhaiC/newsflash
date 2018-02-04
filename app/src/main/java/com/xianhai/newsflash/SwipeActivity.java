@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -70,6 +71,7 @@ public class SwipeActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private LinearLayout btnLayout;
     private ConstraintLayout bodyLayout;
+    private ConstraintLayout listViewLayout;
     private SearchView searchView;
     private WebView webView;
     private Spinner keyWords;
@@ -161,6 +163,7 @@ public class SwipeActivity extends AppCompatActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
+
         likeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
@@ -219,7 +222,26 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        savedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, keytermsList);
+        returnButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+               onBackPressed();
+            }
+        });
+
+        savedAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, storedHeadlines){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+
+                TextView textView=(TextView) view.findViewById(android.R.id.text1);
+
+            /*YOUR CHOICE OF COLOR*/
+                textView.setTextColor(Color.WHITE);
+
+                return view;
+            }
+        };
         savedList.setAdapter(savedAdapter);
 
         savedList.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -401,7 +423,9 @@ public class SwipeActivity extends AppCompatActivity {
     private void updateLoadSavedArticles(){
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.GONE);
-        btnLayout.setVisibility(View.GONE);
+        btnLayout.setVisibility(View.VISIBLE);
+        searchView.setVisibility(View.GONE);
+        returnButton.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         savedList.setVisibility(View.VISIBLE);
