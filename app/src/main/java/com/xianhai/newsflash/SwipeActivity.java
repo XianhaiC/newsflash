@@ -539,17 +539,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void generateSummary() {
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        ArrayList<ArrayList<String>> params = new ArrayList<ArrayList<String>>();
         String url = "https://api.aylien.com/api/v1/summarize";
-
-/*
-        params.add(new ArrayList<String>(Arrays.asList("SM_URL", newsInfo.get(0).get(1))));
-        params.add(new ArrayList<String>(Arrays.asList("SM_API_KEY", Config.SMMRY_API_KEY.get(apiKeyIndex))));
-
-        //params.add(new ArrayList<String>(Arrays.asList("SM_KEYWORD_COUNT", Config.SM_KEYWORD_COUNT)));
-        params.add(new ArrayList<String>(Arrays.asList("SM_LENGTH", Config.SM_LENGTH)));
-     */
-
 
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
@@ -600,119 +590,79 @@ public class SwipeActivity extends AppCompatActivity {
             }
         };
         queue.add(postRequest);
-
-
-
-        /*
-
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground( final Void ... params ) {
-                // something you know that will take a few seconds
-                try {
-                    TextAPIClient client = new TextAPIClient("c5bf3e34", "bd22e5376ee81016f78c0768f4601dd4");
-                    SummarizeParams.Builder builder = SummarizeParams.newBuilder();
-                    java.net.URL url = new java.net.URL(newsInfo.get(0).get(1));
-                    builder.setUrl(url);
-                    builder.setNumberOfSentences(2);
-                    Summarize summary = client.summarize(builder.build());
-                    System.err.println("finished parsing words");
-                    String content = "";
-                    for (String sentence: summary.getSentences()) {
-                        content += sentence;
-                    }
-                    summaryTextView.setText(content);
-                    titleTextView.setText(newsInfo.get(0).get(0));
-                    updateVisSummaryLoaded();
-                } catch (MalformedURLException e) {
-                    System.err.println(e);
-                } catch (TextAPIException e) {
-                    System.err.println(e);
-                }
-                try {
-                    HttpResponse<JsonNode> response = Unirest.post("https://api.aylien.com/api/v1/summarize")
-                            .header("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4")
-                            .header("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34")
-                            .field("url", newsInfo.get(0).get(1))
-                            .field("sentences_number", "2")
-                            .asJson();
-                    summaryTextView.setText(response.getBody().toString());
-                    titleTextView.setText(newsInfo.get(0).get(0));
-                } catch (UnirestException e) {
-                    System.err.println(e);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute( final Void result ) {
-                // continue what you are doing...
-            }
-        }.execute();
-
-        */
-        /*
-        params.add(new ArrayList<String>(Arrays.asList("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4")));
-        params.add(new ArrayList<String>(Arrays.asList("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34")));
-        params.add(new ArrayList<String>(Arrays.asList("url", newsInfo.get(0).get(1))));
-        params.add(new ArrayList<String>(Arrays.asList("sentences_number", "2")));
-        apiKeyIndex = (apiKeyIndex + 1) % Config.SMMRY_API_KEY.size();
-        //String url = constructURL("https://api.smmry.com", params);
-
-        String url = constructURL("https://api.aylien.com/api/v1/summarize", params);
-        System.err.println(url);
-
-	// Request a string response from the provided URL.
-        StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        try {
-                            JSONObject data = new JSONObject(response);
-                            JSONArray sentences = data.getJSONArray("sentences");
-                            String content = "";
-                            for (int i = 0; i < sentences.length(); i++) {
-                                content += sentences.getString(i);
-                            }
-                            summaryTextView.setText(content);
-                            titleTextView.setText(newsInfo.get(0).get(0));
-
-                            summaryTextView.setText(data.getString("sm_api_content"));
-                            titleTextView.setText(newsInfo.get(0).get(0));
-                            updateVisSummaryLoaded();
-                            //JSONArray keywords = data.getJSONArray("sm_api_keyword_array");
-                            //generateKeywords(keywords);
-                        } catch (JSONException e) {
-                            System.err.println(e);
-                            summaryTextView.setText(newsInfo.get(0).get(3));
-                            titleTextView.setText(newsInfo.get(0).get(0));
-                            updateVisSummaryLoaded();
-                        }
-
-                        HashMap<String,String> data = new Gson().fromJson(response, new TypeToken<HashMap<String, String>>(){}.getType());
-                        summaryTextView.setText(data.get("sm_api_content"));
-                        titleTextView.setText(newsInfo.get(0).get(0));
-                        updateVisSummaryLoaded();
-                        JSONObject
-                        System.err.println("Success: summary");
-                        System.err.println(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.err.println("Fail: summary");
-                System.err.println(error);
-            }
-        });
-        queue.add(stringRequest);*/
+        generateKeywords();
     }
 
-    private void generateKeywords(JSONArray keywords) {
+    private void generateKeywords() {
         keytermsList.clear();
         keytermsMap.clear();
         keytermsList.add("Choose term to view");
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "https://api.aylien.com/api/v1/concepts";
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject data = new JSONObject(response);
+                            JSONObject concepts = data.getJSONObject("concepts");
+                            Iterator<?> keys = concepts.keys();
+                            String content = "";
+                            int index = 0;
+                            while (keys.hasNext() && index < 5) {
+                                String key = (String) keys.next();
+                                if (concepts.get(key) instanceof JSONObject) {
+                                    JSONArray surfaceForms = ((JSONObject) concepts.get(key)).getJSONArray("surfaceForms");
+                                    String keyterm = ((JSONObject) surfaceForms.get(0)).getString("string");
+                                    keytermsList.add(keyterm);
+                                    keyTermsAdapter.notifyDataSetChanged();
+                                    keytermsMap.put(keyterm, key);
+                                }
+                                index++;
+                            }
+                            keyTermsAdapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            System.err.println(e);
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        System.err.println(error);
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                HashMap<String, String> params = new HashMap<>();
+                params.put("url", newsInfo.get(0).get(1));
+
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4");
+                headers.put("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34");
+
+                return headers;
+            }
+        };
+        queue.add(postRequest);
+
+
+        /*
+
+
+
         RequestQueue queue = Volley.newRequestQueue(this);
         ArrayList<String> wikiURLs = new ArrayList<String>();
         int requestsDone = 0;
@@ -756,7 +706,7 @@ public class SwipeActivity extends AppCompatActivity {
         } catch (JSONException e) {
             System.err.println(e);
         }
-        keyTermsAdapter.notifyDataSetChanged();
+        */
     }
 
 
