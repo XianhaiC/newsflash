@@ -216,7 +216,14 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        savedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, keytermsList);
+        returnButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+               onBackPressed();
+            }
+        });
+
+        savedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, storedHeadlines);
         savedList.setAdapter(savedAdapter);
 
         savedList.setOnItemClickListener(new AdapterView.OnItemClickListener()
