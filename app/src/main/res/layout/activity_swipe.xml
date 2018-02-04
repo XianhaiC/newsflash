@@ -78,7 +78,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:visibility="gone"
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="96dp">
 
@@ -119,13 +118,23 @@
                     android:id="@+id/keytermsTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Related Terms:" />
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="24dp"
+                    android:text="Relevant Terms"
+                    android:textAlignment="center"
+                    android:textSize="28sp" />
 
                 <Spinner
                     android:id="@+id/keytermsSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@android:drawable/btn_dropdown"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:popupBackground="@color/white"
+                    android:background="@color/white"
                     android:spinnerMode="dropdown" />
 
             </LinearLayout>

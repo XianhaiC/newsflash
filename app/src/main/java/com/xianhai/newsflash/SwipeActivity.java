@@ -77,6 +77,8 @@ public class SwipeActivity extends AppCompatActivity {
     private Spinner keyWords;
     private ListView savedList;
     private ListView keyTermsListView;
+    private Spinner keytermsSpinner;
+    private TextView keytermsTextView;
     private ArrayAdapter<String> savedAdapter;
     private ArrayAdapter<String> keyTermsAdapter;
 
@@ -95,7 +97,7 @@ public class SwipeActivity extends AppCompatActivity {
     private boolean isLoading;
     private boolean summaryLoading;
 
-    private Spinner keytermsSpinner;
+
 
     private String searchQuery;
 
@@ -147,7 +149,7 @@ public class SwipeActivity extends AppCompatActivity {
         savedList = (ListView)findViewById(R.id.savedList);
         //keyTermsListView = (ListView)findViewById(R.id.keyermsListView);
         keytermsSpinner = (Spinner)findViewById(R.id.keytermsSpinner);
-        
+        keytermsTextView = (TextView) findViewById(R.id.keytermsTextView);
 
         //headlineTextView.setTypeface(customFont);
         // write helper method for vis initialization
@@ -168,12 +170,8 @@ public class SwipeActivity extends AppCompatActivity {
 
         likeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
-                decorView.setBackgroundColor(Color.WHITE);
-                headlineTextView.setTextColor(Color.BLACK);
-                headlineTextView.setVisibility(View.GONE);
-                btnLayout.setVisibility(View.GONE);
-                progressBar.setVisibility(View.VISIBLE);
+                updateVisSummaryUnloaded();
+                initializeBtnSummary();
                 generateSummary();
             }
         });
@@ -181,8 +179,10 @@ public class SwipeActivity extends AppCompatActivity {
         dislikeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
-                displayNextNews();
-                if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
+                if(!isLoading) {
+                    displayNextNews();
+                    if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
+                }
             }
         });
 
@@ -193,7 +193,7 @@ public class SwipeActivity extends AppCompatActivity {
                 searchView.setQuery("", true);
                 searchView.clearFocus();
                 searchQuery = EMPTY;
-                updateVisSwipeLoaded();
+                updateVisSwipeUnloaded();
                 generateNews(NEWS_BATCH);
             }
         });
@@ -357,6 +357,7 @@ public class SwipeActivity extends AppCompatActivity {
         }
         else if(inListView){
             updateVisSwipeLoaded();
+            initializeBtnSwipe();
             inListView = false;
         }
     }
@@ -460,6 +461,7 @@ public class SwipeActivity extends AppCompatActivity {
         headlineTextView.setTextColor(0xFFFFFFFF);
         summaryTextView.setTextColor(0xFFFFFFFF);
         titleTextView.setTextColor(0xFFFFFFFF);
+        keytermsTextView.setTextColor(0xFFFFFFFF);
         lastColorSet = rand;
     }
 
@@ -576,7 +578,7 @@ public class SwipeActivity extends AppCompatActivity {
             {
                 HashMap<String, String> params = new HashMap<>();
                 params.put("url", newsInfo.get(0).get(1));
-                params.put("sentences_number", "2");
+                params.put("sentences_number", Config.SENT_LENGTH);
 
                 return params;
             }
@@ -584,8 +586,11 @@ public class SwipeActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<>();
-                headers.put("X-AYLIEN-TextAPI-Application-Key", "bd22e5376ee81016f78c0768f4601dd4");
-                headers.put("X-AYLIEN-TextAPI-Application-ID", "c5bf3e34");
+                String key = Config.AYLIEN_API_KEY.get(apiKeyIndex);
+                String id = Config.AYLIEN_ID.get(apiKeyIndex);
+                apiKeyIndex = ++apiKeyIndex % Config.AYLIEN_API_KEY.size();
+                headers.put("X-AYLIEN-TextAPI-Application-Key", key);
+                headers.put("X-AYLIEN-TextAPI-Application-ID", id);
 
                 return headers;
             }
@@ -615,7 +620,7 @@ public class SwipeActivity extends AppCompatActivity {
                             Iterator<?> keys = concepts.keys();
                             String content = "";
                             int index = 0;
-                            while (keys.hasNext() && index < 5) {
+                            while (keys.hasNext() && index < Config.KEYWORD_COUNT) {
                                 String key = (String) keys.next();
                                 if (concepts.get(key) instanceof JSONObject) {
                                     JSONArray surfaceForms = ((JSONObject) concepts.get(key)).getJSONArray("surfaceForms");
@@ -660,56 +665,6 @@ public class SwipeActivity extends AppCompatActivity {
             }
         };
         queue.add(postRequest);
-
-
-        /*
-
-
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-        ArrayList<String> wikiURLs = new ArrayList<String>();
-        int requestsDone = 0;
-        try {
-            String url = "https://en.wikipedia.org/w/api.php?action=query&prop=info&inprop=url&format=json&titles=";
-            for (int i = 0; i < keywords.length(); i++) {
-                if (i != 0) url += "|";
-                url += keywords.getString(i);
-            }
-            StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    try {
-                        JSONObject wikiData = new JSONObject(response);
-                        System.err.println(wikiData);
-                        JSONObject data = new JSONObject(response);
-                        JSONObject pages = data.getJSONObject("query").getJSONObject("pages");
-                        Iterator<?> keys = pages.keys();
-                        while (keys.hasNext()) {
-                            String key = (String) keys.next();
-                            if (pages.get(key) instanceof JSONObject) {
-                                JSONObject keytermObj = ((JSONObject) pages.get(key));
-                                String keytermURL = keytermObj.getString("fullurl");
-                                String keyterm = keytermObj.getString("title");
-                                keytermsList.add(keyterm);
-                                keyTermsAdapter.notifyDataSetChanged();
-                                keytermsMap.put(keyterm, keytermURL);
-                            }
-                        }
-                    } catch (JSONException e) {
-                        System.err.println(e);
-                    }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-
-                }
-            });
-            queue.add(stringRequest);
-        } catch (JSONException e) {
-            System.err.println(e);
-        }
-        */
     }
 
 
