@@ -2,7 +2,9 @@ package com.xianhai.newsflash;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -48,15 +51,17 @@ public class SwipeActivity extends AppCompatActivity {
     private ImageView backgroundView;
     private int apiKeyIndex = 0;
 
+    private Typeface customFont;
     private TextView headlineTextView;
-    private Button likeBtn;
-    private Button dislikeBtn;
+    private ImageButton likeBtn;
+    private ImageButton dislikeBtn;
     private Button linkBtn;
     private ScrollView summaryScrollView;
     private TextView titleTextView;
     private TextView summaryTextView;
     private ProgressBar progressBar;
-    private LinearLayout btnLinearLayout;
+    private LinearLayout btnLayout;
+    private ConstraintLayout bodyLayout;
     private SearchView searchView;
     private WebView webView;
 
@@ -91,20 +96,22 @@ public class SwipeActivity extends AppCompatActivity {
 
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
-        likeBtn = (Button) findViewById(R.id.likeBtn);
+        likeBtn = (ImageButton) findViewById(R.id.likeBtn);
+        customFont = Typeface.createFromAsset(getAssets(), "fonts/coolvetica_rg.ttf");
         headlineTextView = (TextView) findViewById(R.id.headlineTextView);
-        dislikeBtn = (Button) findViewById(R.id.dislikeBtn);
+        dislikeBtn = (ImageButton) findViewById(R.id.dislikeBtn);
         backgroundView = (ImageView) findViewById(R.id.backgroundView);
         summaryScrollView = (ScrollView) findViewById(R.id.summaryScrollView);
         titleTextView = (TextView) findViewById(R.id.titleTextView);
         summaryTextView = (TextView) findViewById(R.id.summaryTextView);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        btnLinearLayout = (LinearLayout) findViewById(R.id.btnLinearLayout);
+        btnLayout = (LinearLayout) findViewById(R.id.btnLayout);
+        bodyLayout = (ConstraintLayout) findViewById(R.id.bodyLayout);
         linkBtn = (Button) findViewById(R.id.linkBtn);
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
 
-
+        //headlineTextView.setTypeface(customFont);
         // write helper method for vis initialization
         summaryScrollView.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
@@ -135,12 +142,12 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
-        backgroundView.setOnTouchListener(new OnSwipeTouchListener(SwipeActivity.this) {
+        bodyLayout.setOnTouchListener(new OnSwipeTouchListener(SwipeActivity.this) {
             public void onSwipeRight() {
                 decorView.setBackgroundColor(Color.WHITE);
                 headlineTextView.setTextColor(Color.BLACK);
                 headlineTextView.setVisibility(View.GONE);
-                btnLinearLayout.setVisibility(View.GONE);
+                btnLayout.setVisibility(View.GONE);
                 progressBar.setVisibility(View.VISIBLE);
                 generateSummary();
             }
@@ -178,7 +185,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void updateVisSwipeLoaded() {
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.GONE);
-        btnLinearLayout.setVisibility(View.VISIBLE);
+        btnLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.VISIBLE);
         webView.setVisibility(View.GONE);
         inSummaryMode = false;
@@ -189,7 +196,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void updateVisSwipeUnloaded() {
         progressBar.setVisibility(View.VISIBLE);
         summaryScrollView.setVisibility(View.GONE);
-        btnLinearLayout.setVisibility(View.VISIBLE);
+        btnLayout.setVisibility(View.VISIBLE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         inSummaryMode = false;
@@ -200,7 +207,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void updateVisSummaryLoaded() {
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.VISIBLE);
-        btnLinearLayout.setVisibility(View.GONE);
+        btnLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         inSummaryMode = true;
@@ -211,7 +218,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void updateVisSummaryUnloaded() {
         progressBar.setVisibility(View.VISIBLE);
         summaryScrollView.setVisibility(View.GONE);
-        btnLinearLayout.setVisibility(View.GONE);
+        btnLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         inSummaryMode = false;
@@ -222,7 +229,7 @@ public class SwipeActivity extends AppCompatActivity {
     private void updateVisWebViewLoaded(){
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.GONE);
-        btnLinearLayout.setVisibility(View.GONE);
+        btnLayout.setVisibility(View.GONE);
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
         inSummaryMode = false;
