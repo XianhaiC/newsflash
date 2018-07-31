@@ -42,21 +42,24 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
+/*
+    The main activity class that handles most user functions
+ */
 public class SwipeActivity extends AppCompatActivity {
     private static final String EMPTY = "";
     private static final int SEED = 69;
     private static final int NEWS_BATCH = 30;
     private static int[] backgroundColors = new int[] {0xFFA37A9D,0xFF884E89, 0xFF4D3159, 0xFF2C1B30, 0xFF5151A3};
-    private ArrayList<Bitmap> images;
+
+    // data structs
     private ArrayList<ArrayList<String>> newsInfo;
     private ArrayList<String> storedHeadlines;
     private HashMap<String, String> articles;
     private HashMap<String, String> keytermsMap;
     private ArrayList<String> keytermsList;
-    private View decorView;
-    private int apiKeyIndex = 0;
 
-    private Typeface customFont;
+    // view items
+    private View decorView;
     private TextView headlineTextView;
     private ImageButton savedBtn;
     private ImageButton likeBtn;
@@ -82,9 +85,10 @@ public class SwipeActivity extends AppCompatActivity {
     private ArrayAdapter<String> savedAdapter;
     private ArrayAdapter<String> keyTermsAdapter;
 
+    // layouts
     private LinearLayout summaryLinearLayout;
 
-
+    // logic vars
     private Random random;
     private int lastColorSet;
 
@@ -95,9 +99,6 @@ public class SwipeActivity extends AppCompatActivity {
 
     private boolean inSummaryMode;
     private boolean isLoading;
-    private boolean summaryLoading;
-
-
 
     private String searchQuery;
 
@@ -113,12 +114,10 @@ public class SwipeActivity extends AppCompatActivity {
         inSummaryMode = false;
         isLoading = false;
         savePressed = false;
-        summaryLoading = false;
 
         searchQuery = EMPTY;
 
         pageHistory = new HashMap<String, Integer>();
-        images = new ArrayList<Bitmap>();
         newsInfo = new ArrayList<ArrayList<String>>();
         storedHeadlines = new ArrayList<String>();
         articles = new HashMap<String, String>();
@@ -128,7 +127,6 @@ public class SwipeActivity extends AppCompatActivity {
         decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         likeBtn = (ImageButton) findViewById(R.id.likeBtn);
-        customFont = Typeface.createFromAsset(getAssets(), "fonts/coolvetica_rg.ttf");
         headlineTextView = (TextView) findViewById(R.id.headlineTextView);
         dislikeBtn = (ImageButton) findViewById(R.id.dislikeBtn);
         summaryScrollView = (ScrollView) findViewById(R.id.summaryScrollView);
@@ -143,43 +141,42 @@ public class SwipeActivity extends AppCompatActivity {
         randomBtn = (ImageButton) findViewById(R.id.randomBtn);
         searchView = (SearchView) findViewById(R.id.searchView);
         webView= (WebView)findViewById(R.id.WebView1);
-        //keyWords = (Spinner)findViewById(R.id.spinner1);
         savedList = (ListView)findViewById(R.id.savedList);
         returnButton = (ImageButton) findViewById(R.id.returnBtn);
         savedList = (ListView)findViewById(R.id.savedList);
-        //keyTermsListView = (ListView)findViewById(R.id.keyermsListView);
         keytermsSpinner = (Spinner)findViewById(R.id.keytermsSpinner);
         keytermsTextView = (TextView) findViewById(R.id.keytermsTextView);
 
-        //headlineTextView.setTypeface(customFont);
-        // write helper method for vis initialization
+        // set initial visibilities
         summaryScrollView.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
-        //keyWords.setVisibility(View.GONE);
         savedList.setVisibility(View.GONE);
         initializeBtnSwipe();
-        //keyTermsListView.setVisibility(View.GONE);
         keytermsSpinner.setVisibility(View.GONE);
 
+        // webView settings
         webView.setWebViewClient(new MyBrowser());
         webView.getSettings().getLoadsImagesAutomatically();
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
-
+        // handles like button clicks, generates summary for article
         likeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 updateVisSummaryUnloaded();
                 initializeBtnSummary();
                 summaryScrollView.fullScroll(ScrollView.FOCUS_UP);
+
+                // create and show the summary
                 generateSummary();
             }
         });
 
+        // handles dislike button clicks
         dislikeBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
+                // skip to the next news article
                 if(!isLoading) {
                     displayNextNews();
                     if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
@@ -187,28 +184,31 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
+        // randomize the articles shown
         randomBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
                 clearNewsInfo();
+
+                // empty query to receive any kind of article
                 searchView.setQuery("", true);
                 searchView.clearFocus();
                 searchQuery = EMPTY;
                 updateVisSwipeUnloaded();
+
                 generateNews(NEWS_BATCH);
             }
         });
 
+        // go to the article's URL
         linkBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
                 openWebView();
             }
         });
 
+        // save the article for later viewing
         savedBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
                 updateLoadSavedArticles();
             }
         });
@@ -225,48 +225,47 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
+        // return to previous page
         returnButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
                onBackPressed();
             }
         });
 
+        // adapter for the saved links list
         savedAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, storedHeadlines){
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view =super.getView(position, convertView, parent);
-
                 TextView textView=(TextView) view.findViewById(android.R.id.text1);
-
-            /*YOUR CHOICE OF COLOR*/
                 textView.setTextColor(Color.WHITE);
 
                 return view;
             }
         };
+        // apply the adapter
         savedList.setAdapter(savedAdapter);
 
+        // load the saved article URL
         savedList.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
             @Override
             public void onItemClick(AdapterView<?> adapter, View v, int position,
                                     long arg3)
             {
+                // load and display the webpage
                 String value = (String)adapter.getItemAtPosition(position);
                 webView.loadUrl(articles.get(value));
                 updateVisWebViewLoaded();
                 inWebView = true;
-
-                // assuming string and if you want to get the value on click of list item
-
             }
         });
 
+        // list adapter for key terms of an article
         keyTermsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, keytermsList);
         keytermsSpinner.setAdapter(keyTermsAdapter);
 
-
+        // handle clicking of the key terms
         keytermsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
             @Override
@@ -274,24 +273,23 @@ public class SwipeActivity extends AppCompatActivity {
             {
                 String value = (String)parentView.getItemAtPosition(position);
                 if(value!= "Choose term to view") {
+                    // load the wiki page for the link
                     webView.loadUrl(keytermsMap.get(value));
                     updateVisWebViewLoaded();
                     inWebView = true;
                 }
-
-                // assuming string and if you want to get the value on click of list item
-
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // your code here
             }
         });
 
+        // handle search query actions
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                // fetch news articles and show them
                 clearNewsInfo();
                 query = processQuery(query);
                 searchQuery = query;
@@ -310,8 +308,10 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
+        // handle swiping actions
         bodyLayout.setOnTouchListener(new OnSwipeTouchListener(SwipeActivity.this) {
             public void onSwipeRight() {
+                // show the article header's corresponding article
                 updateVisSummaryUnloaded();
                 initializeBtnSummary();
                 summaryScrollView.fullScroll(ScrollView.FOCUS_UP);
@@ -319,6 +319,7 @@ public class SwipeActivity extends AppCompatActivity {
             }
 
             public void onSwipeLeft() {
+                // move on to next article header
                 if(!isLoading) {
                     displayNextNews();
                     if (newsInfo.size() < 10) generateNews(NEWS_BATCH);
@@ -333,13 +334,15 @@ public class SwipeActivity extends AppCompatActivity {
             }
         });
 
+        // finally generate the initial news header
         generateNews(NEWS_BATCH);
         displayNextNews();
-        //makeRequest();
     }
 
+    // handle the back button
     @Override
     public void onBackPressed() {
+        // move back to the header
         if (inSummaryMode) {
             displayNextNews();
             updateVisSwipeLoaded();
@@ -348,6 +351,7 @@ public class SwipeActivity extends AppCompatActivity {
             pageLoaded = false;
             savePressed = false;
         }
+        // move back to summary
         else if(inWebView){
             webView.loadUrl("about:blank");
             if(inListView){
@@ -364,6 +368,7 @@ public class SwipeActivity extends AppCompatActivity {
         }
     }
 
+    // update to the swiping layout
     private void updateVisSwipeLoaded() {
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.GONE);
@@ -376,6 +381,7 @@ public class SwipeActivity extends AppCompatActivity {
         inWebView = false;
     }
 
+    // update to swiping layout with loader
     private void updateVisSwipeUnloaded() {
         progressBar.setVisibility(View.VISIBLE);
         summaryScrollView.setVisibility(View.GONE);
@@ -388,6 +394,7 @@ public class SwipeActivity extends AppCompatActivity {
         inWebView = false;
     }
 
+    // update to the summary layout
     private void updateVisSummaryLoaded() {
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.VISIBLE);
@@ -395,13 +402,13 @@ public class SwipeActivity extends AppCompatActivity {
         headlineTextView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         savedList.setVisibility(View.GONE);
-        //keyTermsListView.setVisibility(View.VISIBLE);
         keytermsSpinner.setVisibility(View.VISIBLE);
         inSummaryMode = true;
         isLoading = false;
         inWebView = false;
     }
 
+    // update to the summary layout with loader
     private void updateVisSummaryUnloaded() {
         progressBar.setVisibility(View.VISIBLE);
         summaryScrollView.setVisibility(View.GONE);
@@ -414,6 +421,7 @@ public class SwipeActivity extends AppCompatActivity {
         inWebView = false;
     }
 
+    // update to the webview
     private void updateVisWebViewLoaded(){
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.GONE);
@@ -426,6 +434,8 @@ public class SwipeActivity extends AppCompatActivity {
         inWebView = true;
         pageLoaded = true;
     }
+
+    // update to the saved articles layout
     private void updateLoadSavedArticles(){
         progressBar.setVisibility(View.GONE);
         summaryScrollView.setVisibility(View.GONE);
@@ -442,6 +452,7 @@ public class SwipeActivity extends AppCompatActivity {
         inListView = true;
     }
 
+    // display the next article header
     private void displayNextNews() {
         if (newsInfo.size() != 0) {
             newsInfo.remove(0);
@@ -453,6 +464,7 @@ public class SwipeActivity extends AppCompatActivity {
         }
     }
 
+    // change the background color
     private void changeColorSet() {
         int rand;
         do {
@@ -467,6 +479,7 @@ public class SwipeActivity extends AppCompatActivity {
         lastColorSet = rand;
     }
 
+    // construct proper URL
     private static String constructURL(String API, ArrayList<ArrayList<String>> params) {
         String url = API + "?";
         for (int i = 0; i < params.size(); i++) {
@@ -476,10 +489,13 @@ public class SwipeActivity extends AppCompatActivity {
         return url;
     }
 
+    // retrieve specified number of new articles
     private void generateNews(int toRetrieve) {
-
+        // initiate volley request
         RequestQueue queue = Volley.newRequestQueue(this);
         ArrayList<ArrayList<String>> params = new ArrayList<ArrayList<String>>();
+
+        // the news API
         String API = "https://newsapi.org/v2";
         int page = 1;
         if (pageHistory.containsKey(searchQuery)) {
@@ -490,13 +506,14 @@ public class SwipeActivity extends AppCompatActivity {
             pageHistory.put(searchQuery, page);
         }
 
+        // add params to the query
         params.add(new ArrayList<String>(Arrays.asList("page", Integer.toString(page))));
         params.add(new ArrayList<String>(Arrays.asList("pageSize", Integer.toString(toRetrieve))));
         params.add(new ArrayList<String>(Arrays.asList("apiKey", Config.NEWS_API_KEY)));
+
+        // default query
         if (searchQuery == null || searchQuery == "") {
-            //params.add(new ArrayList<String>(Arrays.asList("sources", "google-news")));
             params.add(new ArrayList<String>(Arrays.asList("q", "trump")));
-            //API += "/top-headlines";
         }
         else {
             params.add(new ArrayList<String>(Arrays.asList("q", searchQuery)));
@@ -505,12 +522,14 @@ public class SwipeActivity extends AppCompatActivity {
         params.add(new ArrayList<String>(Arrays.asList("sortBy", "popularity")));
         API += "/everything";
 
+        // create the request
         String url = constructURL(API, params);
         System.err.println(url);
         StringRequestRetry stringRequest = new StringRequestRetry(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        // decode json object to retrieve news info and display the new article
                         try {
                             JSONObject data = new JSONObject(response);
                             JSONArray articles = data.getJSONArray("articles");
@@ -542,15 +561,20 @@ public class SwipeActivity extends AppCompatActivity {
         });
         queue.add(stringRequest);
     }
+
+    // generate summary for news article
     private void generateSummary() {
+        // create volley request queue
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "https://api.aylien.com/api/v1/summarize";
 
+        // create request
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
                     @Override
                     public void onResponse(String response) {
+                        // retrieve and display the summary
                         try {
                             JSONObject data = new JSONObject(response);
                             JSONArray sentences = data.getJSONArray("sentences");
@@ -588,15 +612,7 @@ public class SwipeActivity extends AppCompatActivity {
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                /*HashMap<String, String> headers = new HashMap<>();
-                String key = Config.AYLIEN_API_KEY.get(apiKeyIndex);
-                String id = Config.AYLIEN_ID.get(apiKeyIndex);
-                apiKeyIndex = ++apiKeyIndex % Config.AYLIEN_API_KEY.size();
-                headers.put("X-AYLIEN-TextAPI-Application-Key", key);
-                headers.put("X-AYLIEN-TextAPI-Application-ID", id);*/
                 HashMap<String, String> headers = new HashMap<>();
-                /*headers.put("X-AYLIEN-TextAPI-Application-Key", "4212669a7baa9612836e487651f8c65e");
-                headers.put("X-AYLIEN-TextAPI-Application-ID", "6ff7caf3");*/
                 headers.put("X-AYLIEN-TextAPI-Application-Key", Config.AYLIEN_API_KEY.get(0));
                 headers.put("X-AYLIEN-TextAPI-Application-ID", Config.AYLIEN_ID.get(0));
                 return headers;
@@ -607,21 +623,24 @@ public class SwipeActivity extends AppCompatActivity {
         generateKeywords();
     }
 
-
+    // generate keywords for summary
     private void generateKeywords() {
         keytermsList.clear();
         keytermsMap.clear();
         keytermsList.add("Choose term to view");
         keytermsSpinner.setSelection(0);
 
+        // create volley request queue
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "https://api.aylien.com/api/v1/concepts";
 
+        // create request
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
                     @Override
                     public void onResponse(String response) {
+                        // extract keywords from the json object
                         try {
                             JSONObject data = new JSONObject(response);
                             JSONObject concepts = data.getJSONObject("concepts");
@@ -675,10 +694,8 @@ public class SwipeActivity extends AppCompatActivity {
         queue.add(postRequest);
     }
 
-
-
+    // open the webview for article url
     private void openWebView(){
-
         //open browser inside your app
         String url = newsInfo.get(0).get(1);
         if(!pageLoaded) webView.loadUrl(url);
@@ -686,6 +703,7 @@ public class SwipeActivity extends AppCompatActivity {
         inWebView = true;
     }
 
+    // used for the webview
     private class MyBrowser extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url){
@@ -694,15 +712,17 @@ public class SwipeActivity extends AppCompatActivity {
         }
     }
 
+    // clear the news info
     private void clearNewsInfo() {
         newsInfo.clear();
     }
 
+    // retrieve the search query text
     private static String processQuery(String query) {
         return query.replaceAll("[^a-zA-Z ]", "").toLowerCase();
     }
 
-
+    // initialize the swipe layout's buttons
     private void initializeBtnSwipe() {
         likeBtn.setVisibility(View.VISIBLE);
         dislikeBtn.setVisibility(View.VISIBLE);
@@ -713,6 +733,8 @@ public class SwipeActivity extends AppCompatActivity {
         saveBtn.setVisibility(View.GONE);
         returnButton.setVisibility(View.GONE);
     }
+
+    // initialize the summary layout's buttons
     private void initializeBtnSummary() {
         likeBtn.setVisibility(View.GONE);
         dislikeBtn.setVisibility(View.GONE);
