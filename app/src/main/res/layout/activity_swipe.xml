@@ -8,12 +8,7 @@
     tools:context="com.xianhai.newsflash.SwipeActivity"
     >
 
-
-
-
-
-
-
+    <!-- Main layout containing view for swiping/viewing summaries -->
     <RelativeLayout
         android:id="@+id/searchLayout"
         android:layout_width="match_parent"
@@ -23,6 +18,7 @@
         android:visibility="visible"
         tools:layout_editor_absoluteX="0dp">
 
+        <!-- Search bar -->
         <SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
@@ -33,6 +29,7 @@
 
         </SearchView>
 
+        <!-- Back button -->
         <ImageButton
             android:id="@+id/returnBtn"
             style="?android:attr/borderlessButtonStyle"
@@ -44,6 +41,7 @@
 
     </RelativeLayout>
 
+    <!-- Body of screen between search bar and menu -->
     <android.support.constraint.ConstraintLayout
         android:id="@+id/bodyLayout"
         android:layout_width="match_parent"
@@ -56,6 +54,7 @@
         app:layout_constraintTop_toBottomOf="@+id/searchLayout"
         tools:layout_editor_absoluteX="0dp">
 
+        <!-- View for loading web page articles -->
         <WebView
             android:id="@+id/WebView1"
             android:layout_width="match_parent"
@@ -64,6 +63,7 @@
 
         </WebView>
 
+        <!-- Saved articles list -->
         <ListView
             android:id="@+id/savedList"
             android:layout_width="match_parent"
@@ -73,6 +73,7 @@
 
         </ListView>
 
+        <!-- Article summary view -->
         <ScrollView
             android:id="@+id/summaryScrollView"
             android:layout_width="match_parent"
@@ -81,11 +82,13 @@
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="96dp">
 
+            <!-- Layout for summary page -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- Summary page title -->
                 <TextView
                     android:id="@+id/titleTextView"
                     android:layout_width="match_parent"
@@ -100,6 +103,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     tools:layout_editor_absoluteY="16dp" />
 
+                <!-- Summary paragraph -->
                 <TextView
                     android:id="@+id/summaryTextView"
                     android:layout_width="match_parent"
@@ -114,6 +118,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     tools:layout_editor_absoluteY="16dp" />
 
+                <!-- Key terms label -->
                 <TextView
                     android:id="@+id/keytermsTextView"
                     android:layout_width="match_parent"
@@ -125,6 +130,7 @@
                     android:textAlignment="center"
                     android:textSize="28sp" />
 
+                <!-- Keyterms dropdown menu -->
                 <Spinner
                     android:id="@+id/keytermsSpinner"
                     android:layout_width="match_parent"
@@ -140,6 +146,7 @@
             </LinearLayout>
         </ScrollView>
 
+
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyle"
@@ -154,6 +161,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Article headline -->
         <TextView
             android:id="@+id/headlineTextView"
             android:layout_width="match_parent"
@@ -182,7 +190,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         tools:layout_editor_absoluteX="0dp">
 
-
+        <!-- Bottom menu bar -->
         <LinearLayout
             android:id="@+id/btnLayout"
             android:layout_width="match_parent"
@@ -191,6 +199,7 @@
             android:visibility="visible"
             tools:layout_editor_absoluteX="0dp">
 
+            <!-- Save article button -->
             <ImageButton
                 android:id="@+id/savedBtn"
                 style="?android:attr/borderlessButtonStyle"
@@ -201,6 +210,7 @@
                 android:layout_weight="1"
                 android:src="@drawable/savedbtn" />
 
+            <!-- Dislike button -->
             <ImageButton
                 android:id="@+id/dislikeBtn"
                 style="?android:attr/borderlessButtonStyle"
@@ -211,6 +221,7 @@
                 android:layout_weight="1"
                 android:src="@drawable/dislikebtn" />
 
+            <!-- Like button -->
             <ImageButton
                 android:id="@+id/likeBtn"
                 style="?android:attr/borderlessButtonStyle"
@@ -221,6 +232,7 @@
                 android:layout_weight="1"
                 android:src="@drawable/likebtn" />
 
+            <!-- Randomize button -->
             <ImageButton
                 android:id="@+id/randomBtn"
                 style="?android:attr/borderlessButtonStyle"
@@ -232,6 +244,8 @@
                 android:src="@drawable/randombtn" />
 
         </LinearLayout>
+
+        <!-- Article summary page -->
         <LinearLayout
             android:id="@+id/summaryBtnLayout"
             android:layout_width="match_parent"
@@ -241,6 +255,7 @@
             android:visibility="visible"
             tools:layout_editor_absoluteX="0dp">
 
+            <!-- Save article button -->
             <ImageButton
                 android:id="@+id/saveBtn"
                 style="?android:attr/borderlessButtonStyle"
@@ -251,6 +266,7 @@
                 android:layout_weight="1"
                 android:src="@drawable/savebtn" />
 
+            <!-- Open link to webpage button -->
             <ImageButton
                 android:id="@+id/linkBtn"
                 style="?android:attr/borderlessButtonStyle"
